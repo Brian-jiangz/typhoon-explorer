@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080e15"><title>台风探秘 · 地球实验室</title><link rel="stylesheet" href="style.css"></head>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080e15"><title>台风探秘 · 地球实验室</title><link rel="stylesheet" href="style.css?v=drag2"></head>
 <body>
 <header><a class="brand" href="index.html"><span class="brand-icon">◉</span> 台风探秘 <span class="brand-en">EARTH LAB</span></a><nav aria-label="主导航"><span class="active">地球模拟</span><a href="knowledge.html#anatomy">台风结构</a><a href="knowledge.html#quiz">知识挑战</a></nav><span class="mode"><i></i> 交互演示</span></header>
 <main>
 <div id="scene" role="img" aria-label="可旋转缩放的三维地球，显示西北太平洋上的台风云系和示意路径" tabindex="0"></div>
 <div id="loading" role="status">正在准备地球影像…</div>
 <div id="labels" aria-hidden="true"></div>
-<div class="map-caption"><span>EARTH VIEW / 01</span><h1>西伸或东退，<br>台风怎么走？</h1><p>左右拖动副高西端，看看引导气流与台风路径。</p></div>
+<div class="map-caption"><span>EARTH VIEW / 01</span><h1>西伸或东退，<br>台风怎么走？</h1><p>拖动金色副高：左右调西伸，上下调脊线。</p></div>
 <aside class="panel storm-panel"><div class="panel-tabs" role="tablist" aria-label="实验面板"><button id="tabFactors" role="tab" aria-selected="true" aria-controls="factorsPanel">动手玩</button><button id="tabStorm" role="tab" aria-selected="false" aria-controls="stormPanel">看看台风</button></div><div id="stormPanel" role="tabpanel" aria-labelledby="tabStorm" hidden><div class="eyebrow"><span class="live-dot"></span> 西北太平洋 · 示意情景</div><div class="storm-title"><h2 id="stage">强台风</h2><span id="category">14–15 级</span></div><p class="description" id="description">云系逐渐组织成清晰的螺旋，风眼与眼墙变得可辨。</p>
 <div class="stats"><div><small>最大风速 · 示例</small><strong><span id="wind">46</span><em>m/s</em></strong></div><div><small>中心气压 · 示例</small><strong><span id="pressure">945</span><em>hPa</em></strong></div></div>
 <div class="location"><span>风暴中心</span><b id="coordinates">18.5°N / 131.0°E</b></div>
@@ -23,5 +23,5 @@
 <footer><span>地表影像：NASA Blue Marble / three.js Earth texture</span><a href="assets/SOURCES.md">数据与说明 ↗</a></footer>
 </main>
 <dialog id="info"><button id="closeInfo" class="close" aria-label="关闭">×</button><div class="eyebrow">关于地球实验室</div><h2>真实地理上的台风演示</h2><p>地球使用真实地表影像，台风云系贴合球面，位置、路径和大小都通过经纬度与地球半径换算。</p><p>云系、环流粒子、五天路径、风速和气压为理想化演示。它们没有接入实时卫星、历史最佳路径资料或数值天气模式；动画播放速度也不代表真实风速。</p><p>主界面分别控制西端伸展和脊线南北位置。副高东端固定，西伸改变范围，脊线移动改变南北位置。引导气流从理想化高度场按地转关系构造，并叠加设定的背景平移；以米每秒计算风，再按球面距离换算路径。触岸后仍继续移动，按累计陆上时间示意减弱。它没有接入真实风场，也没有经过历史路径校准，不能用来确定实际登陆位置。</p><p>“更多实验设置”中可以调整海温、暖水层厚度、中层湿度、深层垂直风切变、生成纬度、初始扰动、对流不稳定度、高层流出与海陆接触。相同演变时刻下，云系组织程度、对称性、旋转和风速气压示例会随环境改变。各因素之间的映射为教学设定，不是经验预报公式。</p><p>拖动时间轴可观察生成、增强和减弱；使用右侧按钮切换区域与全球视角。从导航可以进入新的三维结构探索与情景挑战。</p><p>路径机制参考：<a href="https://www.hko.gov.hk/en/education/tropical-cyclone/tracking/00707-Weather-Systems-Mix-and-Match-Tropical-Cyclone-Track.html" target="_blank" rel="noopener">香港天文台：天气系统与台风路径 ↗</a></p><p>机制参考：<a href="https://www.noaa.gov/jetstream/tropical/tropical-cyclone-introduction" target="_blank" rel="noopener">NOAA 热带气旋形成条件 ↗</a></p><a href="https://threejs.org/" target="_blank" rel="noopener">三维渲染：three.js ↗</a></dialog>
-<script src="assets/three.min.js"></script><script src="assets/textures.js"></script><script src="assets/land.js"></script><script src="simulation.js"></script><script src="app.js"></script>
+<script src="assets/three.min.js"></script><script src="assets/textures.js"></script><script src="assets/land.js"></script><script src="simulation.js"></script><script src="app.js?v=drag2"></script>
 </body></html>
