@@ -139,3 +139,32 @@ footer{left:588px;right:24px;bottom:12px;font-size:8px}
  .conditions-result{margin-top:5px}.formation-result{margin:4px 0}.formation-result p{font-size:9px}
  .factor-actions button{font-size:9px;padding:4px}.factor-disclaimer{font-size:8.5px}.subtle{margin-top:4px;padding-top:5px}
 }
+
+/* Conditions and storm details are visible side by side from the first frame. */
+.storm-details{position:absolute;z-index:2;top:24px;right:24px;width:288px;padding:18px;pointer-events:auto}
+.storm-details .storm-title{margin:13px 0 8px;gap:8px}
+.storm-details .storm-title h2{font-size:24px;line-height:1.35}
+.storm-details .storm-title>span{white-space:nowrap;font-size:9px;padding:4px 6px;flex-shrink:0}
+.storm-details .description{min-height:0;font-size:11px;line-height:1.7;margin:0 0 16px}
+.storm-details .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.storm-details .stats small{font-size:10px;margin-bottom:6px}
+.storm-details .stats strong{font-size:27px}
+.storm-details .location{margin-top:15px;gap:8px;font-size:10px;flex-wrap:wrap}
+.storm-driver{font-size:11px;color:var(--accent);line-height:1.6;margin:12px 0 0}
+.storm-details .local-environment{font-size:10px;margin-top:8px;padding-top:8px}
+.storm-details .divider{margin:14px 0 11px}
+.layer-controls{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;margin-top:5px}
+.storm-details .toggle{display:flex;gap:6px;margin:0;font-size:10px;padding:8px 0}
+.storm-details .layer-icon{display:none}
+.storm-details .toggle>span:first-child{gap:0}
+.storm-details .switch{flex-shrink:0}
+.view-tools{right:330px;top:24px}
+@media(max-width:1100px){
+ .storm-details{position:relative;top:auto;right:auto;width:100%;max-width:720px;margin:0 auto;padding:16px;order:0}
+ .storm-panel{order:1}.timeline{order:2}footer{order:3}
+ .storm-details .storm-title{margin-top:8px}.storm-details .description{margin-bottom:12px}
+ .storm-details .stats{max-width:330px}.storm-details .location{margin-top:12px}
+ .layer-controls{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+ .view-tools{top:270px;right:16px}
+}
+@media(max-width:520px){.layer-controls{grid-template-columns:1fr 1fr}.storm-details{padding:14px}.storm-details .stats strong{font-size:25px}}
