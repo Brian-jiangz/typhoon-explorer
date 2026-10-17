@@ -124,3 +124,18 @@ footer{left:588px;right:24px;bottom:12px;font-size:8px}
  .conditions-guide{font-size:10px}.factor-actions{flex-wrap:wrap}.factor-actions button{flex:1 1 30%;font-size:9px}
  .timeline-note{display:none}.timeline-bottom{font-size:8px}.map-caption p{max-width:230px}
 }
+@media(min-width:1101px) and (max-height:950px){
+ main{padding-top:72px}
+ .map-caption{top:13px}.map-caption>span{display:none}.map-caption h1{font-size:20px;margin-top:0}
+ .storm-panel{padding:10px}.panel-tabs{margin-bottom:5px;padding-bottom:5px}.panel-tabs button{padding:4px 6px}
+ .experiment-tabs{margin-bottom:6px}.experiment-tabs button{padding:4px 6px}
+ .genesis-location #genesisStatus{min-height:15px;font-size:9px}.genesis-location #genesisLocation{font-size:9px}
+ .formation-run{margin:4px 0 7px}.formation-run .formation-play{min-height:29px;padding:5px}
+ .conditions-board{padding-top:7px}.conditions-guide{margin:3px 0 6px;font-size:9px}
+ #factorControls{gap:5px}.factor-control{padding:6px}.factor-control>label{font-size:10px}.factor-control output{font-size:9px}
+ .condition-why{font-size:9px;line-height:1.4;min-height:25px;margin:3px 0 0}
+ .factor-control input[type=range]{height:17px}.condition-quick{margin:1px 0 3px}.condition-quick button{min-height:18px;font-size:9px;padding:1px}
+ .factor-status{font-size:8.5px;min-height:14px;line-height:1.4}
+ .conditions-result{margin-top:5px}.formation-result{margin:4px 0}.formation-result p{font-size:9px}
+ .factor-actions button{font-size:9px;padding:4px}.factor-disclaimer{font-size:8.5px}.subtle{margin-top:4px;padding-top:5px}
+}
