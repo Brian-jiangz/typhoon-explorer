@@ -1,0 +1,27 @@
+# Publish only the current site and its documented resources.
+*
+!.gitignore
+!.nojekyll
+!README.md
+!index.html
+!style.css
+!app.js
+!simulation.js
+!knowledge.html
+!learning.css
+!learning.js
+!learning-model.js
+!storm-view.js
+!assets/
+assets/*
+!assets/three.min.js
+!assets/THREE-LICENSE.txt
+!assets/earth.jpg
+!assets/textures.js
+!assets/land.geojson
+!assets/land.js
+!assets/SOURCES.md
+!assets/LEARNING-SOURCES.md
+!checks/
+checks/*
+!checks/verify-ridge.cjs
