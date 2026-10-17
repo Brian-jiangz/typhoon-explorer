@@ -25,3 +25,4 @@ assets/*
 !checks/
 checks/*
 !checks/verify-ridge.cjs
+!checks/verify-formation.cjs
