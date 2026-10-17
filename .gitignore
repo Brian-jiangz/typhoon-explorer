@@ -26,3 +26,10 @@ assets/*
 checks/*
 !checks/verify-ridge.cjs
 !checks/verify-formation.cjs
+!climate.js
+!assets/climate-data.js
+!assets/climate-manifest.json
+!scripts/
+scripts/*
+!scripts/build-climate.py
+!scripts/verify-climate.py
