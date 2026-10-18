@@ -13,9 +13,17 @@
 <div class="scene-topline"><span id="sceneName">台风结构平面示意</span></div>
 <div class="scene-bottomline"><span id="sceneHint">观察平面示意，选择右侧答案</span><span id="sceneScale">结构示意 · 非卫星实况</span></div>
 </section>
-<aside class="lesson-panel challenge-panel" id="challengePanel" hidden><div id="taskPanel"><div class="mission-heading"><span class="eyebrow" id="missionIndex">小任务 01 / 04</span><span id="missionProgress">已完成 0 项</span></div><div class="mission-dots" id="missionDots" aria-label="挑战进度"></div><h2 id="missionTitle"></h2><p class="mission-intro" id="missionIntro"></p><div id="missionControls"></div><div id="feedback" class="feedback" role="status" hidden><strong id="feedbackTitle"></strong><p id="feedbackText"></p></div><button class="primary" id="checkTask">就这样试试 →</button><button class="primary" id="nextTask" hidden>下一个小任务 →</button><p class="mission-note">没有倒计时，选错也可以再试一次。</p></div><div id="completion" hidden><div class="completion-mark">✓</div><span class="eyebrow">4 个小任务，全部完成</span><h2>下次看台风，<br>你会多看懂一点。</h2><p>你已找到眼墙，也试过改变台风路径。面对风眼里的短暂平静，仍要留在安全地点。</p><ul><li>风眼较平静，眼墙更猛烈。</li><li>副高的位置能影响台风的走向。</li><li>风停了一会儿，不代表危险结束。</li><li>提前准备，关注官方预警与避险安排。</li></ul><button class="primary" id="restartChallenge">再玩一遍 ↺</button><a class="completion-earth" href="index.html">回到地球，继续摆副高 ↗</a></div></aside>
+<aside class="lesson-panel challenge-panel" id="challengePanel" hidden><div id="taskPanel"><div class="mission-heading"><span class="eyebrow" id="missionIndex">小任务 01 / 04</span><span id="missionProgress">已完成 0 项</span></div><div class="mission-dots" id="missionDots" aria-label="挑战进度"></div><h2 id="missionTitle"></h2><p class="mission-intro" id="missionIntro"></p><div id="missionControls"></div><div id="feedback" class="feedback" role="status" hidden><div class="feedback-verdict"><span id="feedbackIcon" aria-hidden="true"></span><b id="feedbackVerdict"></b></div><strong id="feedbackTitle"></strong><p id="feedbackText"></p></div><button class="primary" id="checkTask">就这样试试 →</button><button class="primary" id="nextTask" hidden>下一个小任务 →</button><p class="mission-note">没有倒计时，选错也可以再试一次。</p></div><div id="completion" hidden><div class="completion-mark">✓</div><span class="eyebrow">4 个小任务，全部完成</span><h2>下次看台风，<br>你会多看懂一点。</h2><p>你已找到眼墙，也试过改变台风路径。面对风眼里的短暂平静，仍要留在安全地点。</p><ul><li>风眼较平静，眼墙更猛烈。</li><li>副高的位置能影响台风的走向。</li><li>风停了一会儿，不代表危险结束。</li><li>提前准备，关注官方预警与避险安排。</li></ul><button class="primary" id="restartChallenge">再玩一遍 ↺</button><a class="completion-earth" href="index.html">回到地球，继续摆副高 ↗</a></div></aside>
 </div>
 <footer><span>平面图与情景均为科普示意 · 不同台风的结构会有差异</span><a href="assets/LEARNING-SOURCES.md">科学依据与说明 ↗</a></footer>
 </main>
+<dialog id="answerResult" class="answer-result" aria-labelledby="answerVerdict" aria-describedby="answerTitle answerExplanation">
+<button id="closeAnswer" class="answer-close" aria-label="关闭答题结果">×</button>
+<div id="answerIcon" class="answer-icon" aria-hidden="true">✓</div>
+<h2 id="answerVerdict">答对了！</h2>
+<p id="answerTitle" class="answer-title"></p>
+<p id="answerExplanation" class="answer-explanation"></p>
+<button id="answerContinue" class="answer-continue">下一题 →</button>
+</dialog>
 <script src="assets/land.js"></script><script src="simulation.js"></script><script src="learning-model.js"></script><script src="learning.js"></script>
 </body></html>
