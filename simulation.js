@@ -77,10 +77,10 @@
   const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:360,history:[],landfall:null};
   run.history.push(formationState({...validated.point,h:0,v,landHours:0,onLand:false,trend:0,organization:environment.seed>0?(.35+.35*clamp(environment.seed/100))*clamp(Math.sin(Math.abs(validated.point.lat)*DEG)/Math.sin(8*DEG)):0},run));return run;
  }
- function formationFlow(lat,lon,run,windSpeed=run.history?.at(-1)?.v??8){
+ function formationFlow(lat,lon,run){
   const climate=root.TyphoonClimate,base=climate?.flowAt(lat,lon,run.month);
   if(!base?.valid)return{valid:false,reason:base?.reason||'引导风背景缺测。'};
-  const deep=clamp((windSpeed-10)/25),blend=flow=>({u:flow.lowU+(flow.u-flow.lowU)*deep,v:flow.lowV+(flow.v-flow.lowV)*deep}),actual=blend(base),control=ridgeGeometry(run.basin.ridge),modified=ridgeGeometry(run.ridge);
+  const blend=flow=>({u:flow.u,v:flow.v}),actual=blend(base),control=ridgeGeometry(run.basin.ridge),modified=ridgeGeometry(run.ridge);
   if(modified.west===control.west&&modified.axis===control.axis)return{valid:true,...actual};
   // Resample the observed monthly wind pattern under a hypothetical ridge deformation.
   // The displayed ellipse still is not a diagnosed geopotential-height contour.
