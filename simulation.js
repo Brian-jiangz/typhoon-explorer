@@ -27,24 +27,36 @@
  const EARTH_RADIUS=6371000,DEG=Math.PI/180,GRAVITY=9.80665,OMEGA=7.2921159e-5;
  const ridgeDefault={west:125,axis:28};
  const ridgePresets={west:{west:110},middle:{west:125},east:{west:140}};
- function normalizeRidge(input={}){const west=Number(input.west??ridgeDefault.west),axis=Number(input.axis??ridgeDefault.axis);return{west:clamp(Number.isFinite(west)?west:ridgeDefault.west,110,140),axis:clamp(Number.isFinite(axis)?axis:ridgeDefault.axis,23,38)};}
- function ridgeGeometry(input={}){const r=normalizeRidge(input);return{...r,east:170,center:(170+r.west)/2,halfLon:(170-r.west)/2,halfLat:10};}
- function heightField(lat,lon,input={}){const r=ridgeGeometry(input),x=(lon-r.center)/r.halfLon,y=(lat-r.axis)/r.halfLat;return 120*Math.exp(-.5*(x*x+y*y));}
- function ridgeWind(lat,lon,input={}){const r=ridgeGeometry(input),cosAxis=Math.cos(r.axis*DEG),cosLat=Math.max(.08,Math.cos(lat*DEG)),lx=EARTH_RADIUS*cosAxis*r.halfLon*DEG,ly=EARTH_RADIUS*r.halfLat*DEG,x=EARTH_RADIUS*cosAxis*(lon-r.center)*DEG,y=EARTH_RADIUS*(lat-r.axis)*DEG,z=heightField(lat,lon,r),f=2*OMEGA*Math.sin(r.axis*DEG),q=GRAVITY*z/f;return{u:q*y/(ly*ly),v:-q*x/(lx*lx)*cosAxis/cosLat};}
+ function basinAt(lon,lat=20){
+  lon=((Number(lon)+180)%360+360)%360-180;
+  // A coarse isthmus divider selects a teaching basin, not an official warning area.
+  const divider=[[-100,17],[-95,16],[-90,14],[-85,10],[-82,8],[-78,8],[-77,7]];let pacific=lon<-100;
+  for(let i=0;i<divider.length-1;i++){const a=divider[i],b=divider[i+1];if(lon>=a[0]&&lon<b[0])pacific=lat<a[1]+(b[1]-a[1])*(lon-a[0])/(b[0]-a[0]);}
+  if(pacific)return{id:'eastPacific',name:'中东部北太平洋',storm:'飓风',ridge:{west:-160,axis:28,offset:-285}};
+  if(lon<20)return{id:'atlantic',name:'北大西洋',storm:'飓风',ridge:{west:-65,axis:28,offset:-190}};
+  if(lon<100)return{id:'indian',name:'北印度洋',storm:'热带气旋',ridge:{west:55,axis:28,offset:-70}};
+  return{id:'westPacific',name:'西北太平洋',storm:'台风',ridge:{...ridgeDefault}};
+ }
+ function normalizeRidge(input={}){const offset=Number.isFinite(Number(input.offset))?clamp(Number(input.offset),-360,360):0,west=Number(input.west??(ridgeDefault.west+offset)),axis=Number(input.axis??ridgeDefault.axis);return{west:clamp(Number.isFinite(west)?west:ridgeDefault.west+offset,110+offset,140+offset),axis:clamp(Number.isFinite(axis)?axis:ridgeDefault.axis,23,38),...(offset?{offset}:{})};}
+ function ridgeGeometry(input={}){const r=normalizeRidge(input),east=170+(r.offset||0);return{...r,east,center:(east+r.west)/2,halfLon:(east-r.west)/2,halfLat:10};}
+ function longitudeDifference(a,b){return((a-b+180)%360+360)%360-180;}
+ function heightField(lat,lon,input={}){const r=ridgeGeometry(input),x=longitudeDifference(lon,r.center)/r.halfLon,y=(lat-r.axis)/r.halfLat;return 120*Math.exp(-.5*(x*x+y*y));}
+ function ridgeWind(lat,lon,input={}){const r=ridgeGeometry(input),cosAxis=Math.cos(r.axis*DEG),cosLat=Math.max(.08,Math.cos(lat*DEG)),lx=EARTH_RADIUS*cosAxis*r.halfLon*DEG,ly=EARTH_RADIUS*r.halfLat*DEG,x=EARTH_RADIUS*cosAxis*longitudeDifference(lon,r.center)*DEG,y=EARTH_RADIUS*(lat-r.axis)*DEG,z=heightField(lat,lon,r),f=2*OMEGA*Math.sin(r.axis*DEG),q=GRAVITY*z/f;return{u:q*y/(ly*ly),v:-q*x/(lx*lx)*cosAxis/cosLat};}
  function steering(lat,lon,input={}){const w=ridgeWind(lat,lon,input);return{u:w.u-1.2,v:w.v+.9};}
  function angularVelocity(lat,lon,input={}){const w=steering(lat,lon,input);return{lon:w.u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:w.v*3600/EARTH_RADIUS/DEG};}
  function classifyTrack(points){const first=points[0],last=points.at(-1),minLon=Math.min(...points.map(p=>p.lon)),gain=last.lat-first.lat,eastTurn=last.lon-minLon;if(gain>7&&eastTurn>.75)return{id:'recurve',label:'北上后向东转弯',text:'这条示意路径先向西北，随后沿副高西侧北上，并逐渐转向东。'};if(gain>10&&first.lon-minLon<14)return{id:'north',label:'较早向北移动',text:'这次台风较早进入副高西侧的向北气流，西行距离较短。'};return{id:'west',label:'以西行或西北行为主',text:'这次路径在副高南侧的偏东气流中停留较久，整体继续向西或西北移动。'};}
  const landPolygons=(root.EARTH_LAND?.features||[]).flatMap(f=>{const g=f.geometry;if(!g)return[];const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];return polys.map(rings=>{const ring=rings[0],xs=ring.map(p=>p[0]),ys=ring.map(p=>p[1]);return{rings,bbox:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]};});});
  function inRing(lon,lat,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>lat)!==(b[1]>lat)&&lon<(b[0]-a[0])*(lat-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
  function isLand(lat,lon){return landPolygons.some(p=>lon>=p.bbox[0]&&lon<=p.bbox[2]&&lat>=p.bbox[1]&&lat<=p.bbox[3]&&inRing(lon,lat,p.rings[0])&&!p.rings.slice(1).some(r=>inRing(lon,lat,r)));}
- function regionName(lat,lon){if(lat>=29&&lon>=128&&(lat<34.3||lon>=130))return'日本附近';if(lat>=21.7&&lat<=25.5&&lon>=119.8&&lon<=122.5)return'中国台湾省附近';if(lat<20.8&&lon>=117&&lon<=127)return'菲律宾附近';if(lat>=33&&lon>=124&&lon<130&&lat<=43)return'朝鲜半岛附近';if(lat>=29&&lon>=128)return'日本附近';if(lon<124&&lat>=20&&lat<24.5)return'华南沿海';if(lon>=116&&lon<124&&lat>=24.5&&lat<31)return'闽浙沿海';if(lon<124&&lat>=31)return'华东沿海';if(lon<111&&lat<24)return'中南半岛附近';return'其他沿海区域';}
+ function regionName(lat,lon){if(lon<0){if(lon>=-98&&lon<=-80&&lat>=25&&lat<=31)return'美国墨西哥湾沿岸附近';if(lon>=-85&&lon<=-66&&lat>=25)return'美国东海岸附近';if(lon>=-118&&lon<=-86&&lat>=14&&lat<30)return'墨西哥附近';if(lon>=-86&&lon<=-58&&lat>=10&&lat<25)return'加勒比海沿岸附近';return'美洲或大西洋沿岸附近';}if(lon<100)return'印度洋或邻近沿海';if(lat>=29&&lon>=128&&(lat<34.3||lon>=130))return'日本附近';if(lat>=21.7&&lat<=25.5&&lon>=119.8&&lon<=122.5)return'中国台湾省附近';if(lat<20.8&&lon>=117&&lon<=127)return'菲律宾附近';if(lat>=33&&lon>=124&&lon<130&&lat<=43)return'朝鲜半岛附近';if(lat>=29&&lon>=128)return'日本附近';if(lon<124&&lat>=20&&lat<24.5)return'华南沿海';if(lon>=116&&lon<124&&lat>=24.5&&lat<31)return'闽浙沿海';if(lon<124&&lat>=31)return'华东沿海';if(lon<111&&lat<24)return'中南半岛附近';return'其他沿海区域';}
  function trajectory(input={},env={},options={}){const ridge=normalizeRidge(input),e=normalize(env),points=[],requestedStep=clamp(Number(options.step)||.25,.0625,1),steps=Math.round(120/requestedStep),dt=120/steps;let lat=e.latitude,lon=138,landfall=null,landHours=0;
  for(let i=0;i<=steps;i++){const h=i*dt,onLand=isLand(lat,lon);if(!landfall&&onLand)landfall={h,lat,lon,region:regionName(lat,lon)};points.push({h,lat,lon,landHours,onLand});if(i===steps)break;
  const first=angularVelocity(lat,lon,ridge),midLat=lat+first.lat*dt/2,midLon=lon+first.lon*dt/2,next=angularVelocity(midLat,midLon,ridge);if(isLand(midLat,midLon))landHours+=dt;lat=clamp(lat+next.lat*dt,-80,80);lon=clamp(lon+next.lon*dt,90,180);}
  return{ridge,points,landfall,behavior:classifyTrack(points),step:dt,hasCoastline:landPolygons.length>0};}
  function positionAt(route,hour){const h=clamp(Number(hour)||0,0,120),step=route.step||.25,i=Math.min(route.points.length-2,Math.floor(h/step)),a=route.points[i],b=route.points[i+1],t=clamp((h-a.h)/(b.h-a.h));return{lat:a.lat+(b.lat-a.lat)*t,lon:a.lon+(b.lon-a.lon)*t,landHours:(a.landHours||0)+((b.landHours||0)-(a.landHours||0))*t};}
  // Incremental formation sandbox. No reference-intensity keyframes are used here.
- function validateGenesis(point){const lat=Number(point?.lat),lon=Number(point?.lon);if(!Number.isFinite(lat)||!Number.isFinite(lon))return{valid:false,message:'请先在地球的海面上点一下。'};if(lat<0||lat>40||lon<100||lon>180)return{valid:false,message:'当前沙盘演示西北太平洋，请选赤道以北、北纬 40°以内、东经 100–180°的海面。'};if(isLand(lat,lon))return{valid:false,message:'这里是陆地，请换到附近的海面。'};return{valid:true,point:{lat,lon}};}
+ function validateGenesis(point){const lat=Number(point?.lat),value=Number(point?.lon);if(!Number.isFinite(lat)||!Number.isFinite(value))return{valid:false,message:'请先在地球的海面上点一下。'};const lon=((value+180)%360+360)%360-180;if(lat<0||lat>40)return{valid:false,message:'当前支持北半球海域，请选赤道至北纬 40°以内的海面。'};if(isLand(lat,lon))return{valid:false,message:'这里是陆地，请换到附近的海面。'};return{valid:true,point:{lat,lon}};}
+
  // Formation mode uses NOAA climatology and precomputed BE02 thermodynamics.
  // The finite-time growth/organization closure below remains uncalibrated.
  function formationEnvironment(lat,input={},options={}){
@@ -57,15 +69,15 @@
  function formationState(point,run){
   const evaluation=formationEnvironment(point.lat,run.environment,{lon:point.lon,month:run.month,adjustments:run.adjustments}),v=Math.max(0,point.v),stage=stages.filter(s=>v>=s.min).at(-1),text=point.onLand?'经过陆地，海洋供能减少，热带云系逐步衰减。':!evaluation.valid?'背景数据不足，停止推算增强，系统仅示意衰减。':!evaluation.piValid?'热力计算不可用，不推算增强；这里只继续示意衰减。':point.trend<-.001?'当地热力条件、风差或干空气限制发展，系统正在逐渐减弱。':'云团根据当地热力条件、湿度和上下层风差逐步发展。';
   const ratio=evaluation.pi>0?clamp(v/evaluation.pi,0,1.3):0,p=evaluation.piValid&&evaluation.pmin!==null?evaluation.slp-(evaluation.slp-evaluation.pmin)*ratio*ratio:NaN;
-  return{...point,v,p,strength:clamp((v-10)/45),organization:clamp(point.organization),shear:clamp(evaluation.env.shear/30),spin:clamp(Math.sin(Math.abs(point.lat)*DEG)/Math.sin(10*DEG)),stage:{...stage,text},environment:evaluation};
+  return{...point,v,p,strength:clamp((v-10)/45),organization:clamp(point.organization),shear:clamp(evaluation.env.shear/30),spin:clamp(Math.sin(Math.abs(point.lat)*DEG)/Math.sin(10*DEG)),stage:{...stage,...(v>=32.7&&run.basin.storm!=='台风'?{name:run.basin.storm}:{}),text},environment:evaluation};
  }
  function createFormation(options={}){
   const validated=validateGenesis(options.start||{lat:17,lon:138});if(!validated.valid)throw new RangeError(validated.message);
-  const month=clamp(Math.round(Number(options.month)||8),1,12),base=root.TyphoonClimate?.at(validated.point.lat,validated.point.lon,month),initial={...defaults,...(base?.valid?{sst:base.sst,humidity:base.humidity,shear:base.shear}:{}),...options.environment,latitude:validated.point.lat},environment=normalize(initial),ridge=normalizeRidge(options.ridge),value=Number(options.initialWind??8),v=clamp(Number.isFinite(value)?value:8,3,75);
-  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:360,history:[],landfall:null};
+  const month=clamp(Math.round(Number(options.month)||8),1,12),base=root.TyphoonClimate?.at(validated.point.lat,validated.point.lon,month),initial={...defaults,...(base?.valid?{sst:base.sst,humidity:base.humidity,shear:base.shear}:{}),...options.environment,latitude:validated.point.lat},environment=normalize(initial),basin=basinAt(validated.point.lon,validated.point.lat),ridge=normalizeRidge(options.ridge||basin.ridge),value=Number(options.initialWind??8),v=clamp(Number.isFinite(value)?value:8,3,75);
+  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:360,history:[],landfall:null};
   run.history.push(formationState({...validated.point,h:0,v,landHours:0,onLand:false,trend:0,organization:environment.seed>0?(.35+.35*clamp(environment.seed/100))*clamp(Math.sin(Math.abs(validated.point.lat)*DEG)/Math.sin(8*DEG)):0},run));return run;
  }
- function formationVelocity(lat,lon,run){const flow=root.TyphoonClimate?.flowAt(lat,lon,run.month);if(!flow?.valid)return{lat:0,lon:0,valid:false,reason:flow?.reason||'引导风背景缺测。'};const modified=ridgeWind(lat,lon,run.ridge),control=ridgeWind(lat,lon,ridgeDefault),deep=clamp(((run.history.at(-1)?.v||8)-10)/25),u=flow.lowU+(flow.u-flow.lowU)*deep+modified.u-control.u,v=flow.lowV+(flow.v-flow.lowV)*deep+modified.v-control.v;return{valid:true,lon:u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:v*3600/EARTH_RADIUS/DEG};}
+ function formationVelocity(lat,lon,run){const flow=root.TyphoonClimate?.flowAt(lat,lon,run.month);if(!flow?.valid)return{lat:0,lon:0,valid:false,reason:flow?.reason||'引导风背景缺测。'};const modified=ridgeWind(lat,lon,run.ridge),control=ridgeWind(lat,lon,run.basin.ridge),deep=clamp(((run.history.at(-1)?.v||8)-10)/25),u=flow.lowU+(flow.u-flow.lowU)*deep+modified.u-control.u,v=flow.lowV+(flow.v-flow.lowV)*deep+modified.v-control.v;return{valid:true,lon:u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:v*3600/EARTH_RADIUS/DEG};}
  function advanceFormation(run,targetHour){
   const target=clamp(Number(targetHour)||0,0,run.maxHours),dt=run.step;
   while(run.history.at(-1).h+dt<=target+1e-9){
@@ -80,5 +92,5 @@
   const h=clamp(Number(hour)||0,0,run.history.at(-1).h),i=Math.min(run.history.length-1,Math.floor(h/run.step)),a=run.history[i],b=run.history[Math.min(i+1,run.history.length-1)];if(a===b)return a;
   const t=clamp((h-a.h)/(b.h-a.h)),point={h,onLand:t<.5?a.onLand:b.onLand};for(const key of ['lat','lon','v','landHours','trend','organization'])point[key]=a[key]+(b[key]-a[key])*t;return formationState(point,run);
  }
- root.TyphoonModel={keys,defaults,controls,normalize,evaluate,reference,sample,ridgeDefault,ridgePresets,normalizeRidge,ridgeGeometry,heightField,ridgeWind,steering,angularVelocity,trajectory,positionAt,classifyTrack,isLand,regionName,formationEnvironment,validateGenesis,formationVelocity,createFormation,advanceFormation,readFormation};
+ root.TyphoonModel={keys,defaults,controls,normalize,evaluate,reference,sample,ridgeDefault,ridgePresets,normalizeRidge,basinAt,ridgeGeometry,heightField,ridgeWind,steering,angularVelocity,trajectory,positionAt,classifyTrack,isLand,regionName,formationEnvironment,validateGenesis,formationVelocity,createFormation,advanceFormation,readFormation};
 })(typeof window==='undefined'?globalThis:window);

@@ -10,7 +10,7 @@ assert.equal(d.shape[0],12);for(const field of ['sst','humidity','du','dv','slp'
 for(const p of manifest.spotChecks){const v=c.at(p.lat,p.lon,p.month);assert(v.valid&&v.piValid);near(v.sst,p.sst);near(v.shear,p.shear);near(v.humidity,p.humidity);near(v.pi,p.pi);near(v.pmin,p.pmin);}
 const tropical=c.at(20,140,8),north=c.at(40,150,8),winter=c.at(40,150,1);
 assert(tropical.sst>north.sst);assert(tropical.pi>north.pi);assert(north.sst>winter.sst);assert(winter.shear>north.shear);
-assert(!c.at(70,150,8).valid);assert(!c.at(20,40,8).valid);
+assert(!c.at(70,150,8).valid);assert(!c.at(-20,40,8).valid);
 assert.deepEqual(c.at(40,190,8),c.at(40,-170,8));
 const cool=c.at(20,140,8,28),warm=c.at(20,140,8,32);assert(cool.piValid&&warm.piValid);assert(warm.pi>cool.pi);assert(warm.pmin<cool.pmin);
 assert(!c.at(20,140,8,35).piValid); // no extrapolation beyond the PI temperature lookup
@@ -34,4 +34,15 @@ const fine=m.createFormation({start:{lat:20,lon:140}}),coarse=m.createFormation(
 const old=m.keys[2].v;m.keys[2].v=0;const independent=m.createFormation({start:{lat:20,lon:140}});m.advanceFormation(independent,120);assert.deepEqual(independent.history,a.history);m.keys[2].v=old;
 const saved=globalThis.TYPHOON_CLIMATE;delete globalThis.TYPHOON_CLIMATE;const missing=m.createFormation();m.advanceFormation(missing,48);assert.equal(missing.history.length,1);assert(missing.stoppedReason);globalThis.TYPHOON_CLIMATE=saved;
 const extended=m.createFormation({start:{lat:10,lon:170}});assert.equal(extended.maxHours,360);m.advanceFormation(extended,360);assert.equal(extended.history.at(-1).h,360);assert(extended.history.every(p=>Number.isFinite(p.v)&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)));const prefix=extended.history.slice();extended.maxHours+=120;m.advanceFormation(extended,480);assert.equal(extended.history.at(-1).h,480);assert.deepEqual(extended.history.slice(0,prefix.length),prefix);
-console.log('PASS: data hashes, source units and PI checkpoints; geographic/monthly background; date-line wrap; fixed-profile PI sensitivity; no out-of-range extrapolation; history and chunk invariance; gradual northern decay; dry/sheared/cold/zero-seed suppression; land decay; physical steering conversion; reference independence; missing-data fail-closed. Not a forecast-skill validation.');
+// New basins use their own actual monthly fields and no default artificial ridge wind.
+for(const [lat,lon,basin] of [[25,-85,'atlantic'],[20,-60,'atlantic'],[15,-120,'eastPacific'],[10,-95,'eastPacific'],[10,70,'indian']]){
+ assert(m.validateGenesis({lat,lon}).valid);const run=m.createFormation({start:{lat,lon},initialWind:40});assert.equal(run.basin.id,basin);assert.equal(run.ridge.west,run.basin.ridge.west);assert(c.at(lat,lon,8).valid);assert(c.at(lat,lon,8).piValid);
+ const flow=c.flowAt(lat,lon,8),motion=m.formationVelocity(lat,lon,run);near(motion.lon*Math.PI/180*6371000*Math.cos(lat*Math.PI/180)/3600,flow.u,1e-9);near(motion.lat*Math.PI/180*6371000/3600,flow.v,1e-9);
+ assert.equal(run.history[0].stage.name,basin==='indian'?'热带气旋':'飓风');m.advanceFormation(run,24);assert.equal(run.history.at(-1).h,24);assert(run.history.every(point=>Number.isFinite(point.v+point.lat+point.lon)));
+ const old=run.ridge;run.ridge=m.normalizeRidge({...old,west:old.west-3});assert.equal(run.ridge.west,old.west-3);const changed=m.formationVelocity(lat,lon,run);assert(Math.hypot(changed.lat-motion.lat,changed.lon-motion.lon)>1e-6);
+}
+assert(!m.validateGenesis({lat:30,lon:-95}).valid);assert(!m.validateGenesis({lat:-15,lon:70}).valid);
+assert.deepEqual(c.at(20,-60,8),c.at(20,300,8));assert.deepEqual(c.at(20,0,8),c.at(20,360,8));
+for(const field of Object.keys(d.fields)){const n=d.lon.length,t=field.endsWith('BySst')?d.sstLevels.length:1;for(const row of [0,15,24])for(let k=0;k<t;k++)assert.equal(d.fields[field][(7*d.lat.length+row)*n*t+k],d.fields[field][((7*d.lat.length+row)*n+n-1)*t+k]);}
+assert(Number.isFinite(c.flowAt(20,-.1,8).u));assert(Math.abs(c.flowAt(20,-.001,8).u-c.flowAt(20,.001,8).u)<.01);
+console.log('PASS: data hashes, source units and PI checkpoints; geographic/monthly background; date-line wrap; fixed-profile PI sensitivity; no out-of-range extrapolation; history and chunk invariance; gradual northern decay; dry/sheared/cold/zero-seed suppression; land decay; physical steering conversion; reference independence; missing-data fail-closed; Atlantic/Gulf/eastern Pacific/Indian Ocean sources, default ridge cancellation, perturbation sensitivity, periodic seam and basin naming. Not a forecast-skill validation.');
