@@ -33,3 +33,6 @@ checks/*
 scripts/*
 !scripts/build-climate.py
 !scripts/verify-climate.py
+
+!checks/verify-setup.cjs
+!checks/verify-quiz.cjs

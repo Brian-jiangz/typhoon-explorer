@@ -4,3 +4,6 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 #sceneLabels>svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.scene-toolbar button:disabled{opacity:.3;cursor:default}
+
+/* The challenge uses a flat diagram, without a 3D anatomy page. */
+#stormFallback{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%}#stormFallback[hidden]{display:none}#stormFallback svg{width:100%;max-height:85%;flex:1;min-height:0}#stormFallback p{font-size:12px;color:#a5bdc6;padding:0 22px;text-align:center}
