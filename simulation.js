@@ -61,13 +61,13 @@
  // The finite-time growth/organization closure below remains uncalibrated.
  function formationEnvironment(lat,input={},options={}){
   const background=normalize(input),lon=options.lon??138,month=options.month??8,delta=options.adjustments||{sst:0,humidity:0,shear:0},base=root.TyphoonClimate?.at(lat,lon,month);
-  if(!base?.valid)return{...evaluate(background),support:0,valid:false,reason:base?.reason||'气候背景文件未加载。',pi:0,pmin:null,slp:1010,organizationTarget:0,intensityTarget:3,background,adjusted:Object.values(delta).some(x=>Math.abs(x)>.01)};
+  if(!base?.valid)return{...evaluate(background),support:0,valid:false,label:'热力资料暂缺',reason:base?.reason||'气候背景文件未加载。',pi:0,pmin:null,slp:1010,organizationTarget:0,intensityTarget:3,background,adjusted:Object.values(delta).some(x=>Math.abs(x)>.01)};
   const sst=clamp(base.sst+delta.sst,-2,34),humidity=clamp(base.humidity+delta.humidity,0,100),shear=Math.max(0,base.shear+delta.shear),climate=root.TyphoonClimate.at(lat,lon,month,sst),local={...background,sst,humidity,shear,latitude:lat},diagnostic=evaluate(local);
   const potential=climate.piValid?Math.max(0,climate.pi):0,moisture=clamp((humidity-30)/40),shearEfficiency=Math.exp(-Math.pow(shear/18,2)),depthEfficiency=Math.pow(clamp(background.depth/70),.25),landEfficiency=Math.sqrt(1-background.land/100),genesisSpin=clamp(Math.sin(Math.abs(lat)*DEG)/Math.sin(8*DEG)),efficiency=moisture*shearEfficiency*depthEfficiency*landEfficiency,support=clamp(potential/75)*efficiency*genesisSpin;
   return{...diagnostic,env:local,background,climate,valid:true,pi:potential,piValid:climate.piValid,pmin:climate.pmin,slp:base.slp,outflow:base.outflow,support,organizationTarget:clamp(support/.4),intensityTarget:Math.max(3,potential*efficiency),adjusted:Object.values(delta).some(x=>Math.abs(x)>.01),label:support>=.7?'环境较有利':support>=.3?'发展受到限制':'热带发展条件较弱'};
  }
  function formationState(point,run){
-  const evaluation=formationEnvironment(point.lat,run.environment,{lon:point.lon,month:run.month,adjustments:run.adjustments}),v=Math.max(0,point.v),stage=stages.filter(s=>v>=s.min).at(-1),text=point.onLand?'经过陆地，海洋供能减少，热带云系逐步衰减。':!evaluation.valid?'背景数据不足，停止推算增强，系统仅示意衰减。':!evaluation.piValid?'热力计算不可用，不推算增强；这里只继续示意衰减。':point.trend<-.001?'当地热力条件、风差或干空气限制发展，系统正在逐渐减弱。':'云团根据当地热力条件、湿度和上下层风差逐步发展。';
+  const evaluation=formationEnvironment(point.lat,run.environment,{lon:point.lon,month:run.month,adjustments:run.adjustments}),v=Math.max(0,point.v),stage=stages.filter(s=>v>=s.min).at(-1),text=point.onLand?'经过陆地，海洋供能减少，热带云系逐步衰减。':!evaluation.valid?'当地热力资料暂缺，按已有风场继续移动；海上强度暂不更新。':!evaluation.piValid?'热力计算不可用，不推算增强；这里只继续示意衰减。':point.trend<-.001?'当地热力条件、风差或干空气限制发展，系统正在逐渐减弱。':'云团根据当地热力条件、湿度和上下层风差逐步发展。';
   const ratio=evaluation.pi>0?clamp(v/evaluation.pi,0,1.3):0,p=evaluation.piValid&&evaluation.pmin!==null?evaluation.slp-(evaluation.slp-evaluation.pmin)*ratio*ratio:NaN;
   return{...point,v,p,strength:clamp((v-10)/45),organization:clamp(point.organization),shear:clamp(evaluation.env.shear/30),spin:clamp(Math.sin(Math.abs(point.lat)*DEG)/Math.sin(10*DEG)),stage:{...stage,...(v>=32.7&&run.basin.storm!=='台风'?{name:run.basin.storm}:{}),text},environment:evaluation};
  }
@@ -82,8 +82,8 @@
   const target=clamp(Number(targetHour)||0,0,run.maxHours),dt=run.step;
   while(run.history.at(-1).h+dt<=target+1e-9){
    const s=run.history.at(-1),a=formationVelocity(s.lat,s.lon,run),midLat=clamp(s.lat+a.lat*dt/2,-80,80),midLon=s.lon+a.lon*dt/2,b=formationVelocity(midLat,midLon,run),lat=clamp(s.lat+b.lat*dt,-80,80),lon=((s.lon+b.lon*dt+180)%360+360)%360-180,onLand=isLand(midLat,midLon),env=formationEnvironment(midLat,run.environment,{lon:midLon,month:run.month,adjustments:run.adjustments});
-   if(!a.valid||!b.valid||(!env.valid&&!onLand)){run.stoppedReason=env.reason||a.reason||b.reason||'已到达背景数据边界。';break;}
-   const organizationGoal=onLand||!run.seedCanDevelop?0:env.organizationTarget,organization=organizationGoal+(s.organization-organizationGoal)*Math.exp(-dt/(onLand?8:18)),equilibrium=onLand?3:Math.max(3,env.intensityTarget*organization),tau=onLand?12:equilibrium<s.v?18:36,v=equilibrium+(s.v-equilibrium)*Math.exp(-dt/tau),h=Number((s.h+dt).toFixed(8));
+   if(!a.valid||!b.valid){run.stoppedReason=a.reason||b.reason||'引导风资料不足，无法继续移动。';break;}
+   const organizationGoal=onLand||!run.seedCanDevelop?0:env.organizationTarget,organization=!env.valid&&!onLand?s.organization:organizationGoal+(s.organization-organizationGoal)*Math.exp(-dt/(onLand?8:18)),equilibrium=onLand?3:Math.max(3,env.intensityTarget*organization),tau=onLand?12:equilibrium<s.v?18:36,v=!env.valid&&!onLand?s.v:equilibrium+(s.v-equilibrium)*Math.exp(-dt/tau),h=Number((s.h+dt).toFixed(8));
    if(onLand&&!run.landfall)run.landfall={h:s.h+dt/2,lat:midLat,lon:midLon,region:regionName(midLat,midLon)};
    run.history.push(formationState({h,lat,lon,v,landHours:s.landHours+(onLand?dt:0),onLand,trend:(v-s.v)/dt,organization},run));
   }return readFormation(run,target);
