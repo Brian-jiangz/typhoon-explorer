@@ -1,4 +1,4 @@
-/* Deterministic illustration; no observed or forecast data. Shared with non-browser checks. */
+/* Shared teaching model: idealized quiz, monthly climate sandbox and retrospective weather case. */
 (function(root){
  const keys=[{h:0,lat:10,lon:143,v:12,p:1004},{h:18,lat:12,lon:139,v:21,p:994},{h:36,lat:15,lon:135,v:35,p:974},{h:54,lat:18.5,lon:131,v:46,p:945},{h:72,lat:21,lon:126,v:55,p:925},{h:90,lat:23,lon:120.8,v:40,p:960},{h:102,lat:25,lon:118.5,v:24,p:987},{h:120,lat:28,lon:115,v:10,p:1005}];
  const stages=[{min:0,name:'热带扰动',level:'≤ 5 级',text:'风暴已明显减弱，环流和中心云团逐渐松散。'},{min:10.8,name:'热带低压',level:'6–7 级',text:'暖洋面上的扰动逐步组织，云团还没有清晰的风眼。'},{min:17.2,name:'热带风暴',level:'8–9 级',text:'环流逐渐组织，螺旋雨带开始围绕低压中心发展。'},{min:24.5,name:'强热带风暴',level:'10–11 级',text:'中心云团更密集，外围雨带向中心弯曲卷入。'},{min:32.7,name:'台风',level:'12–13 级',text:'成熟风暴可出现风眼，周围的眼墙集中了强风与强降水。'},{min:41.5,name:'强台风',level:'14–15 级',text:'螺旋云带与中心密集云区包围风眼，风暴进入强盛阶段。'},{min:51,name:'超强台风',level:'16 级及以上',text:'本情景达到最强阶段；随后接近陆地并逐渐减弱。'}];
@@ -60,42 +60,43 @@
  // Formation mode uses NOAA climatology and precomputed BE02 thermodynamics.
  // The finite-time growth/organization closure below remains uncalibrated.
  function formationEnvironment(lat,input={},options={}){
-  const background=normalize(input),lon=options.lon??138,month=options.month??8,delta=options.adjustments||{sst:0,humidity:0,shear:0},base=root.TyphoonClimate?.at(lat,lon,month);
+  const background=normalize(input),lon=options.lon??138,month=options.month??8,delta=options.adjustments||{sst:0,humidity:0,shear:0},base=options.weather?root.TyphoonWeather?.at(lat,lon,options.h??0):root.TyphoonClimate?.at(lat,lon,month);
   if(!base?.valid)return{...evaluate(background),support:0,valid:false,label:'热力资料暂缺',reason:base?.reason||'气候背景文件未加载。',pi:0,pmin:null,slp:1010,organizationTarget:0,intensityTarget:3,background,adjusted:Object.values(delta).some(x=>Math.abs(x)>.01)};
-  const sst=clamp(base.sst+delta.sst,-2,34),humidity=clamp(base.humidity+delta.humidity,0,100),shear=Math.max(0,base.shear+delta.shear),climate=root.TyphoonClimate.at(lat,lon,month,sst),local={...background,sst,humidity,shear,latitude:lat},diagnostic=evaluate(local);
+  const sst=clamp(base.sst+delta.sst,-2,34),humidity=clamp(base.humidity+delta.humidity,0,100),shear=Math.max(0,base.shear+delta.shear),climate=options.weather?root.TyphoonWeather.at(lat,lon,options.h??0,sst):root.TyphoonClimate.at(lat,lon,month,sst),local={...background,sst,humidity,shear,latitude:lat},diagnostic=evaluate(local);
   const potential=climate.piValid?Math.max(0,climate.pi):0,moisture=clamp((humidity-30)/40),shearEfficiency=Math.exp(-Math.pow(shear/18,2)),depthEfficiency=Math.pow(clamp(background.depth/70),.25),landEfficiency=Math.sqrt(1-background.land/100),genesisSpin=clamp(Math.sin(Math.abs(lat)*DEG)/Math.sin(8*DEG)),efficiency=moisture*shearEfficiency*depthEfficiency*landEfficiency,support=clamp(potential/75)*efficiency*genesisSpin;
   return{...diagnostic,env:local,background,climate,valid:true,pi:potential,piValid:climate.piValid,pmin:climate.pmin,slp:base.slp,outflow:base.outflow,support,organizationTarget:clamp(support/.4),intensityTarget:Math.max(3,potential*efficiency),adjusted:Object.values(delta).some(x=>Math.abs(x)>.01),label:support>=.7?'环境较有利':support>=.3?'发展受到限制':'热带发展条件较弱'};
  }
  function formationState(point,run){
-  const evaluation=formationEnvironment(point.lat,run.environment,{lon:point.lon,month:run.month,adjustments:run.adjustments}),v=Math.max(0,point.v),stage=stages.filter(s=>v>=s.min).at(-1),text=point.onLand?'经过陆地，海洋供能减少，热带云系逐步衰减。':!evaluation.valid?'当地热力资料暂缺，按已有风场继续移动；海上强度暂不更新。':!evaluation.piValid?'热力计算不可用，不推算增强；这里只继续示意衰减。':point.trend<-.001?'当地热力条件、风差或干空气限制发展，系统正在逐渐减弱。':'云团根据当地热力条件、湿度和上下层风差逐步发展。';
+  const evaluation=formationEnvironment(point.lat,run.environment,{lon:point.lon,month:run.month,adjustments:run.adjustments,weather:run.weather,h:point.h}),v=Math.max(0,point.v),stage=stages.filter(s=>v>=s.min).at(-1),text=point.onLand?'经过陆地，海洋供能减少，热带云系逐步衰减。':!evaluation.valid?'当地热力资料暂缺，按已有风场继续移动；海上强度暂不更新。':!evaluation.piValid?'热力计算不可用，不推算增强；这里只继续示意衰减。':point.trend<-.001?'当地热力条件、风差或干空气限制发展，系统正在逐渐减弱。':'云团根据当地热力条件、湿度和上下层风差逐步发展。';
   const ratio=evaluation.pi>0?clamp(v/evaluation.pi,0,1.3):0,p=evaluation.piValid&&evaluation.pmin!==null?evaluation.slp-(evaluation.slp-evaluation.pmin)*ratio*ratio:NaN;
   return{...point,v,p,strength:clamp((v-10)/45),organization:clamp(point.organization),shear:clamp(evaluation.env.shear/30),spin:clamp(Math.sin(Math.abs(point.lat)*DEG)/Math.sin(10*DEG)),stage:{...stage,...(v>=32.7&&run.basin.storm!=='台风'?{name:run.basin.storm}:{}),text},environment:evaluation};
  }
  function createFormation(options={}){
   const validated=validateGenesis(options.start||{lat:17,lon:138});if(!validated.valid)throw new RangeError(validated.message);
-  const month=clamp(Math.round(Number(options.month)||8),1,12),base=root.TyphoonClimate?.at(validated.point.lat,validated.point.lon,month),initial={...defaults,...(base?.valid?{sst:base.sst,humidity:base.humidity,shear:base.shear}:{}),...options.environment,latitude:validated.point.lat},environment=normalize(initial),basin=basinAt(validated.point.lon,validated.point.lat),ridge=normalizeRidge(options.ridge||basin.ridge),value=Number(options.initialWind??8),v=clamp(Number.isFinite(value)?value:8,3,75);
-  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:360,history:[],landfall:null};
+  const month=clamp(Math.round(Number(options.month)||8),1,12),base=options.weather?root.TyphoonWeather?.at(validated.point.lat,validated.point.lon,0):root.TyphoonClimate?.at(validated.point.lat,validated.point.lon,month),initial={...defaults,...(base?.valid?{sst:base.sst,humidity:base.humidity,shear:base.shear}:{}),...options.environment,latitude:validated.point.lat},environment=normalize(initial),basin=basinAt(validated.point.lon,validated.point.lat),ridge=normalizeRidge(options.ridge||basin.ridge),value=Number(options.initialWind??8),v=clamp(Number.isFinite(value)?value:8,3,75);
+  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,weather:!!options.weather,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:options.weather?root.TYPHOON_WEATHER.hours.at(-1):360,history:[],landfall:null};
   run.history.push(formationState({...validated.point,h:0,v,landHours:0,onLand:false,trend:0,organization:environment.seed>0?(.35+.35*clamp(environment.seed/100))*clamp(Math.sin(Math.abs(validated.point.lat)*DEG)/Math.sin(8*DEG)):0},run));return run;
  }
- function formationFlow(lat,lon,run){
-  const climate=root.TyphoonClimate,base=climate?.flowAt(lat,lon,run.month);
+ function formationFlow(lat,lon,run,h=run.history?.at(-1)?.h??0){
+  const sample=(lat,lon)=>run.weather?root.TyphoonWeather?.flowAt(lat,lon,h,run.windMethod||'point'):root.TyphoonClimate?.flowAt(lat,lon,run.month),base=sample(lat,lon);
   if(!base?.valid)return{valid:false,reason:base?.reason||'引导风背景缺测。'};
+  if(run.weather)return{valid:true,u:base.u,v:base.v};
   const blend=flow=>({u:flow.u,v:flow.v}),actual=blend(base),control=ridgeGeometry(run.basin.ridge),modified=ridgeGeometry(run.ridge);
   if(modified.west===control.west&&modified.axis===control.axis)return{valid:true,...actual};
   // Resample the observed monthly wind pattern under a hypothetical ridge deformation.
   // The displayed ellipse still is not a diagnosed geopotential-height contour.
   const x=longitudeDifference(lon,modified.center)/modified.halfLon,y=(lat-modified.axis)/modified.halfLat,r=Math.hypot(x,y),t=clamp((2-r)),weight=t*t*(3-2*t);
   if(weight===0)return{valid:true,...actual};
-  const sourceLat=lat-(modified.axis-control.axis),sourceLon=control.east+longitudeDifference(lon,modified.east)*control.halfLon/modified.halfLon,source=climate.flowAt(sourceLat,sourceLon,run.month);
+  const sourceLat=lat-(modified.axis-control.axis),sourceLon=control.east+longitudeDifference(lon,modified.east)*control.halfLon/modified.halfLon,source=sample(sourceLat,sourceLon);
   if(!source.valid)return{valid:false,reason:'调整后的引导风采样位置超出资料范围。'};
   const mapped=blend(source);
   return{valid:true,u:actual.u+(mapped.u-actual.u)*weight,v:actual.v+(mapped.v-actual.v)*weight};
  }
- function formationVelocity(lat,lon,run){const flow=formationFlow(lat,lon,run);if(!flow.valid)return{lat:0,lon:0,valid:false,reason:flow.reason};return{valid:true,lon:flow.u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:flow.v*3600/EARTH_RADIUS/DEG};}
+ function formationVelocity(lat,lon,run,h=run.history?.at(-1)?.h??0){const flow=formationFlow(lat,lon,run,h);if(!flow.valid)return{lat:0,lon:0,valid:false,reason:flow.reason};return{valid:true,lon:flow.u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:flow.v*3600/EARTH_RADIUS/DEG};}
  function advanceFormation(run,targetHour){
   const target=clamp(Number(targetHour)||0,0,run.maxHours),dt=run.step;
   while(run.history.at(-1).h+dt<=target+1e-9){
-   const s=run.history.at(-1),a=formationVelocity(s.lat,s.lon,run),midLat=clamp(s.lat+a.lat*dt/2,-80,80),midLon=s.lon+a.lon*dt/2,b=formationVelocity(midLat,midLon,run),lat=clamp(s.lat+b.lat*dt,-80,80),lon=((s.lon+b.lon*dt+180)%360+360)%360-180,onLand=isLand(midLat,midLon),env=formationEnvironment(midLat,run.environment,{lon:midLon,month:run.month,adjustments:run.adjustments});
+   const s=run.history.at(-1),a=formationVelocity(s.lat,s.lon,run,s.h),midLat=clamp(s.lat+a.lat*dt/2,-80,80),midLon=s.lon+a.lon*dt/2,b=formationVelocity(midLat,midLon,run,s.h+dt/2),lat=clamp(s.lat+b.lat*dt,-80,80),lon=((s.lon+b.lon*dt+180)%360+360)%360-180,onLand=isLand(midLat,midLon),env=formationEnvironment(midLat,run.environment,{lon:midLon,month:run.month,adjustments:run.adjustments,weather:run.weather,h:s.h+dt/2});
    if(!a.valid||!b.valid){run.stoppedReason=a.reason||b.reason||'引导风资料不足，无法继续移动。';break;}
    const organizationGoal=onLand||!run.seedCanDevelop?0:env.organizationTarget,organization=!env.valid&&!onLand?s.organization:organizationGoal+(s.organization-organizationGoal)*Math.exp(-dt/(onLand?8:18)),equilibrium=onLand?3:Math.max(3,env.intensityTarget*organization),tau=onLand?12:equilibrium<s.v?18:36,v=!env.valid&&!onLand?s.v:equilibrium+(s.v-equilibrium)*Math.exp(-dt/tau),h=Number((s.h+dt).toFixed(8));
    if(onLand&&!run.landfall)run.landfall={h:s.h+dt/2,lat:midLat,lon:midLon,region:regionName(midLat,midLon)};

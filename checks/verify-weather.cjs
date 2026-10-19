@@ -1,0 +1,13 @@
+'use strict';
+const assert=require('node:assert/strict');for(const f of ['assets/land.js','assets/climate-data.js','assets/weather-doksuri.js','climate.js','weather.js','simulation.js'])require('../'+f);
+const d=global.TYPHOON_WEATHER,w=global.TyphoonWeather,m=global.TyphoonModel,first=d.reference[0];const run=()=>m.createFormation({start:first,weather:true,initialWind:first.v});
+for(const args of [[20,130,-1],[20,130,241],[46,130,0],[20,99,0]])assert(!w.flowAt(...args).valid);
+const a=w.flowAt(20,130,0),b=w.flowAt(20,130,6),c=w.flowAt(20,130,3);assert(Math.hypot(a.u-b.u,a.v-b.v)>.01);assert(Math.abs(c.u-(a.u+b.u)/2)<1e-12);assert(Math.abs(c.v-(a.v+b.v)/2)<1e-12);
+const one=run(),chunks=run();m.advanceFormation(one,228);for(let h=6;h<=228;h+=6)m.advanceFormation(chunks,h);assert.deepEqual(one.history,chunks.history);assert.equal(one.history.at(-1).h,228);
+// Future best-track positions and initial intensity do not determine integrated motion.
+const saved=d.reference.map(x=>({...x}));for(const x of d.reference.slice(1)){x.lat=1;x.lon=150;}const independent=run();m.advanceFormation(independent,228);assert.deepEqual(independent.history,one.history);d.reference=saved;
+const modified=m.createFormation({start:first,weather:true,initialWind:3});modified.ridge.west=110;modified.ridge.axis=38;modified.initialWind=3;m.advanceFormation(modified,24);for(let i=0;i<modified.history.length;i++){assert.equal(modified.history[i].lat,one.history[i].lat);assert.equal(modified.history[i].lon,one.history[i].lon);}
+assert.notDeepEqual(w.contours(0),w.contours(120));assert(w.contours(0).length>0);assert.equal(w.contours(241).length,0);
+const bad=run(),flow=w.flowAt;w.flowAt=()=>({valid:false,reason:'test missing weather'});m.advanceFormation(bad,6);assert.equal(bad.history.at(-1).h,0);assert(bad.stoppedReason);w.flowAt=flow;
+const fs=require('node:fs'),report=JSON.parse(fs.readFileSync(__dirname+'/../assets/weather-validation.json'));assert(report.results.sixHourly.meanPositionErrorKm<150);assert(report.results.monthly.meanPositionErrorKm>500);assert(report.results.sixHourly.mainlandLandfall);assert(report.results.sixHourly.meanTranslationKmhFirst120h>report.observationMeanTranslationKmhFirst120h);assert.equal(report.weatherSha256,require('node:crypto').createHash('sha256').update(fs.readFileSync(__dirname+'/../assets/weather-doksuri.js')).digest('hex'));
+console.log('PASS: six-hour interpolation; strict data bounds; time-chunk invariance; no future-track nudging; locked historical wind despite hypothetical ridge changes; evolving real-height contours; missing wind stops; transparent benchmark includes excessive early speed.');

@@ -1,0 +1,531 @@
+{
+  "id": "doksuri2023",
+  "name": "杜苏芮 2023",
+  "startUTC": "2023-07-21T00:00:00Z",
+  "hours": [
+    0.0,
+    6.0,
+    12.0,
+    18.0,
+    24.0,
+    30.0,
+    36.0,
+    42.0,
+    48.0,
+    54.0,
+    60.0,
+    66.0,
+    72.0,
+    78.0,
+    84.0,
+    90.0,
+    96.0,
+    102.0,
+    108.0,
+    114.0,
+    120.0,
+    126.0,
+    132.0,
+    138.0,
+    144.0,
+    150.0,
+    156.0,
+    162.0,
+    168.0,
+    174.0,
+    180.0,
+    186.0,
+    192.0,
+    198.0,
+    204.0,
+    210.0,
+    216.0,
+    222.0,
+    228.0,
+    234.0,
+    240.0
+  ],
+  "lat": [
+    0.0,
+    2.5,
+    5.0,
+    7.5,
+    10.0,
+    12.5,
+    15.0,
+    17.5,
+    20.0,
+    22.5,
+    25.0,
+    27.5,
+    30.0,
+    32.5,
+    35.0,
+    37.5,
+    40.0,
+    42.5,
+    45.0
+  ],
+  "lon": [
+    100.0,
+    102.5,
+    105.0,
+    107.5,
+    110.0,
+    112.5,
+    115.0,
+    117.5,
+    120.0,
+    122.5,
+    125.0,
+    127.5,
+    130.0,
+    132.5,
+    135.0,
+    137.5,
+    140.0,
+    142.5,
+    145.0,
+    147.5,
+    150.0,
+    152.5,
+    155.0,
+    157.5,
+    160.0
+  ],
+  "sstLevels": [
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    22.0,
+    24.0,
+    26.0,
+    28.0,
+    30.0,
+    32.0,
+    34.0
+  ],
+  "shape": [
+    41,
+    19,
+    25
+  ],
+  "sources": {
+    "uwnd": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis/pressure/uwnd.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=uwnd",
+      "sha256": "7a975b4483f10e8a01057db44cdbb10cf0cdb4ef86ea50a41f0fe85f421655bf",
+      "bytes": 765247,
+      "units": "m/s"
+    },
+    "vwnd": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis/pressure/vwnd.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=vwnd",
+      "sha256": "04ef84476bb4fb2282ef30a8a26b6b792d5047e562a51a08e165d3738cb4a9ac",
+      "bytes": 744745,
+      "units": "m/s"
+    },
+    "hgt": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis/pressure/hgt.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=hgt",
+      "sha256": "83c44457cad4a8e6d219f26c64d5db7cbd6ca5189c7dc22d3806922ed1839751",
+      "bytes": 405456,
+      "units": "m"
+    },
+    "air": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis/pressure/air.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=air",
+      "sha256": "aa0ce0993320fcacff4203072a192680cba0af354900506e589289b04e3a9c4e",
+      "bytes": 498686,
+      "units": "degK"
+    },
+    "rhum": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis/pressure/rhum.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=rhum",
+      "sha256": "19002115e0eb22671a7d72d0ff23d548cfe966ac54fa92984bcf38f71812b613",
+      "bytes": 176229,
+      "units": "%"
+    },
+    "slp": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis/surface/slp.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=slp",
+      "sha256": "0183ea9f38c160ca4807ff30149a487db1e8e90e921135821fc3b298b2b4860d",
+      "bytes": 50855,
+      "units": "Pascals"
+    },
+    "sst": {
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/noaa.oisst.v2.highres/sst.day.mean.2023.nc?north=45&south=0&west=100&east=160&time_start=2023-07-20T00%3A00%3A00Z&time_end=2023-07-31T00%3A00%3A00Z&accept=netcdf4&var=sst&horizStride=10",
+      "sha256": "270336dd082f7132166f2f74c2321cb03e5e3395835281a79b507e55d191ba78",
+      "bytes": 45101,
+      "units": "degC"
+    },
+    "jma": {
+      "url": "https://www.jma.go.jp/jma/jma-eng/jma-center/rsmc-hp-pub-eg/Besttracks/bst_all.zip",
+      "archiveSha256": "76b65a4210e0a9f69c6ce56b401ac572d4203c11edf1f30691a20a891353cef6",
+      "extractedSha256": "8312469800be6533dc5f4b9dbc78ddd9c37145bcde0ac3cf2793b5369a2d6c47",
+      "storm": "2305 DOKSURI",
+      "revision": "20231025"
+    }
+  },
+  "piMethod": "BE02/tcpyPI 1.4; CKCD=.9; V_reduc=.8; reversible; dissipative; ptop=50 hPa",
+  "sstMethod": "NOAA daily OISST subset at 2.5-degree stride; mask-aware bilinear interpolation; daily value assigned to six-hour snapshots for its UTC day; browser linearly interpolates snapshots in time",
+  "windMethod": "6-hour NCEP/NCAR R1; 850–200 hPa pressure-weighted local wind; no track nudging, no speed multiplier, no beta drift",
+  "reference": [
+    {
+      "h": 0.0,
+      "lat": 13.8,
+      "lon": 133.0,
+      "p": 1002,
+      "v": 18.00554,
+      "grade": 3
+    },
+    {
+      "h": 6.0,
+      "lat": 13.9,
+      "lon": 132.8,
+      "p": 1002,
+      "v": 18.00554,
+      "grade": 3
+    },
+    {
+      "h": 12.0,
+      "lat": 14.0,
+      "lon": 132.5,
+      "p": 1002,
+      "v": 18.00554,
+      "grade": 3
+    },
+    {
+      "h": 18.0,
+      "lat": 14.200000000000001,
+      "lon": 132.20000000000002,
+      "p": 1002,
+      "v": 18.00554,
+      "grade": 3
+    },
+    {
+      "h": 24.0,
+      "lat": 14.3,
+      "lon": 131.70000000000002,
+      "p": 998,
+      "v": 20.57776,
+      "grade": 3
+    },
+    {
+      "h": 30.0,
+      "lat": 14.3,
+      "lon": 131.0,
+      "p": 998,
+      "v": 20.57776,
+      "grade": 3
+    },
+    {
+      "h": 36.0,
+      "lat": 14.4,
+      "lon": 130.3,
+      "p": 994,
+      "v": 23.14998,
+      "grade": 3
+    },
+    {
+      "h": 42.0,
+      "lat": 14.600000000000001,
+      "lon": 129.70000000000002,
+      "p": 990,
+      "v": 25.7222,
+      "grade": 4
+    },
+    {
+      "h": 48.0,
+      "lat": 14.700000000000001,
+      "lon": 129.0,
+      "p": 985,
+      "v": 28.294420000000002,
+      "grade": 4
+    },
+    {
+      "h": 54.0,
+      "lat": 14.9,
+      "lon": 128.3,
+      "p": 980,
+      "v": 30.86664,
+      "grade": 4
+    },
+    {
+      "h": 60.0,
+      "lat": 15.0,
+      "lon": 127.80000000000001,
+      "p": 980,
+      "v": 30.86664,
+      "grade": 4
+    },
+    {
+      "h": 66.0,
+      "lat": 15.100000000000001,
+      "lon": 127.0,
+      "p": 970,
+      "v": 36.01108,
+      "grade": 5
+    },
+    {
+      "h": 72.0,
+      "lat": 15.200000000000001,
+      "lon": 126.60000000000001,
+      "p": 965,
+      "v": 38.5833,
+      "grade": 5
+    },
+    {
+      "h": 78.0,
+      "lat": 15.700000000000001,
+      "lon": 126.30000000000001,
+      "p": 950,
+      "v": 43.727740000000004,
+      "grade": 5
+    },
+    {
+      "h": 84.0,
+      "lat": 16.5,
+      "lon": 125.80000000000001,
+      "p": 940,
+      "v": 46.29996,
+      "grade": 5
+    },
+    {
+      "h": 90.0,
+      "lat": 16.900000000000002,
+      "lon": 125.10000000000001,
+      "p": 925,
+      "v": 51.4444,
+      "grade": 5
+    },
+    {
+      "h": 96.0,
+      "lat": 17.6,
+      "lon": 124.60000000000001,
+      "p": 925,
+      "v": 51.4444,
+      "grade": 5
+    },
+    {
+      "h": 102.0,
+      "lat": 18.3,
+      "lon": 123.7,
+      "p": 925,
+      "v": 51.4444,
+      "grade": 5
+    },
+    {
+      "h": 108.0,
+      "lat": 18.900000000000002,
+      "lon": 122.7,
+      "p": 925,
+      "v": 51.4444,
+      "grade": 5
+    },
+    {
+      "h": 114.0,
+      "lat": 19.0,
+      "lon": 121.60000000000001,
+      "p": 925,
+      "v": 51.4444,
+      "grade": 5
+    },
+    {
+      "h": 120.0,
+      "lat": 18.900000000000002,
+      "lon": 121.4,
+      "p": 940,
+      "v": 46.29996,
+      "grade": 5
+    },
+    {
+      "h": 126.0,
+      "lat": 19.3,
+      "lon": 121.0,
+      "p": 950,
+      "v": 43.727740000000004,
+      "grade": 5
+    },
+    {
+      "h": 132.0,
+      "lat": 19.5,
+      "lon": 120.60000000000001,
+      "p": 955,
+      "v": 41.15552,
+      "grade": 5
+    },
+    {
+      "h": 138.0,
+      "lat": 20.0,
+      "lon": 120.0,
+      "p": 955,
+      "v": 41.15552,
+      "grade": 5
+    },
+    {
+      "h": 144.0,
+      "lat": 20.700000000000003,
+      "lon": 119.80000000000001,
+      "p": 955,
+      "v": 38.5833,
+      "grade": 5
+    },
+    {
+      "h": 150.0,
+      "lat": 21.1,
+      "lon": 119.30000000000001,
+      "p": 955,
+      "v": 38.5833,
+      "grade": 5
+    },
+    {
+      "h": 156.0,
+      "lat": 21.8,
+      "lon": 119.10000000000001,
+      "p": 955,
+      "v": 41.15552,
+      "grade": 5
+    },
+    {
+      "h": 162.0,
+      "lat": 22.8,
+      "lon": 118.9,
+      "p": 955,
+      "v": 41.15552,
+      "grade": 5
+    },
+    {
+      "h": 168.0,
+      "lat": 24.200000000000003,
+      "lon": 118.80000000000001,
+      "p": 965,
+      "v": 36.01108,
+      "grade": 5
+    },
+    {
+      "h": 174.0,
+      "lat": 25.3,
+      "lon": 118.30000000000001,
+      "p": 985,
+      "v": 25.7222,
+      "grade": 4
+    },
+    {
+      "h": 180.0,
+      "lat": 27.1,
+      "lon": 117.9,
+      "p": 994,
+      "v": 20.57776,
+      "grade": 3
+    },
+    {
+      "h": 186.0,
+      "lat": 28.900000000000002,
+      "lon": 117.0,
+      "p": 996,
+      "v": 18.00554,
+      "grade": 3
+    },
+    {
+      "h": 192.0,
+      "lat": 30.6,
+      "lon": 115.10000000000001,
+      "p": 998,
+      "v": null,
+      "grade": 2
+    },
+    {
+      "h": 198.0,
+      "lat": 31.900000000000002,
+      "lon": 114.7,
+      "p": 998,
+      "v": null,
+      "grade": 2
+    },
+    {
+      "h": 204.0,
+      "lat": 33.0,
+      "lon": 114.5,
+      "p": 998,
+      "v": null,
+      "grade": 2
+    },
+    {
+      "h": 210.0,
+      "lat": 33.800000000000004,
+      "lon": 114.4,
+      "p": 998,
+      "v": null,
+      "grade": 2
+    },
+    {
+      "h": 216.0,
+      "lat": 35.4,
+      "lon": 114.0,
+      "p": 1000,
+      "v": null,
+      "grade": 2
+    },
+    {
+      "h": 222.0,
+      "lat": 36.1,
+      "lon": 113.7,
+      "p": 1000,
+      "v": null,
+      "grade": 2
+    },
+    {
+      "h": 228.0,
+      "lat": 36.7,
+      "lon": 113.5,
+      "p": 1000,
+      "v": null,
+      "grade": 2
+    }
+  ],
+  "cmaLandfall": {
+    "UTC": "2023-07-28T01:55:00Z",
+    "place": "福建晋江",
+    "url": "https://www.cma.gov.cn/ztbd/2023zt/2023tf/20230725/2018070910/202307/t20230728_5680547.html"
+  },
+  "spotChecks": [
+    {
+      "hour": 0.0,
+      "lat": 15.0,
+      "lon": 135.0,
+      "sst": 29.948997497558594,
+      "slp": 1007.3,
+      "temperature850C": 20.850000000000023,
+      "pi": 69.57442402493136,
+      "pmin": 910.4644138096368,
+      "flag": 1
+    },
+    {
+      "hour": 72.0,
+      "lat": 20.0,
+      "lon": 125.0,
+      "sst": 29.4320011138916,
+      "slp": 1004.8,
+      "temperature850C": 20.749993896484398,
+      "pi": 65.4257825419527,
+      "pmin": 921.7093767750515,
+      "flag": 1
+    },
+    {
+      "hour": 168.0,
+      "lat": 25.0,
+      "lon": 120.0,
+      "sst": 27.826587677001953,
+      "slp": 997.5,
+      "temperature850C": 17.649987792968773,
+      "pi": 31.0112382443039,
+      "pmin": 975.94970353094,
+      "flag": 1
+    }
+  ],
+  "piStatusCounts": {
+    "1": 12997
+  },
+  "artifactSha256": "f2be9e3d99bcfbdf2879b8afdc6ff44c83b98c36273e45f489fb3306cb8b80cb",
+  "artifactBytes": 4875991
+}

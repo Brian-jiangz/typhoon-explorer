@@ -40,3 +40,15 @@ scripts/*
 !structure.html
 !structure.js
 !checks/verify-structure.cjs
+
+!weather.js
+!assets/weather-doksuri.js
+!assets/weather-manifest.json
+!assets/weather-validation.json
+!assets/weather-validation.js
+!assets/WEATHER-SOURCES.md
+!scripts/build-weather.py
+!scripts/validate-weather.cjs
+!scripts/verify-weather.py
+!checks/verify-weather.cjs
+!checks/verify-weather-ui.cjs
