@@ -1,7 +1,7 @@
 /* Shared content and pure challenge rules. No observed storm data. */
 (function(root){
  const parts=[
- {id:'eye',number:'01',name:'风眼',title:'风暴中心，<br>却常常比较平静。',text:'这片较少云的中心，就是风眼。空气在这里下沉，风通常比四周小；并不是每场台风都有清晰的风眼。',mood:'中心较平静',wind:1,takeaway:'风眼经过时，风可能暂时减弱。另一侧眼墙还会带来危险风雨，别急着外出。',action:'从上面找找风眼 ↗',view:'top'},
+ {id:'eye',number:'01',name:'风眼',title:'风暴中心，<br>却常常比较平静。',text:'这片较少云的中心，就是风眼。空气在这里下沉，风通常比四周小；并不是每场台风都有清晰的风眼。',mood:'中心较平静',wind:1,takeaway:'风眼经过时，风可能暂时减弱。另一侧眼墙还会带来危险风雨，别急着外出。',action:'转个角度看风眼 ↗',view:'orbit'},
  {id:'wall',number:'02',name:'眼墙',title:'最猛烈的风雨，<br>藏在这一圈。',text:'风眼外紧挨着的一圈高耸云墙，叫眼墙。空气猛烈上升，强风和强降雨往往集中在这里。',mood:'近中心风雨最强',wind:5,takeaway:'看台风时，别只盯着中心的小圆洞；包围它的这圈云墙更值得注意。',action:'剖开眼墙看看 ↗',view:'cut'},
  {id:'band',number:'03',name:'雨带',title:'雨一阵接一阵，<br>是云带在经过。',text:'一条条弯曲的云带向外伸展，像风暴的手臂。雨带经过时，风雨可能突然增强；两条雨带之间又会暂时减弱。',mood:'外围风雨起伏',wind:3,takeaway:'离风眼很远，也可能遭遇暴雨。台风的影响范围不只在中心附近。',action:'转个角度看雨带 ↗',view:'orbit'},
  {id:'outflow',number:'04',name:'高空流出',title:'空气升上去，<br>还要有地方流走。',text:'近海面的空气向中心汇入，在眼墙附近上升，再从高空向外流出。打开气流示意，跟着光点看一遍。',mood:'高空向外流出',wind:0,takeaway:'台风是立体的环流。下方流入、眼墙上升、高空流出，并不只是平面上的转圈。',action:'跟着空气走一遍 ↗',view:'flow'}

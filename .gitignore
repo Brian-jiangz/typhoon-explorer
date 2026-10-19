@@ -36,3 +36,7 @@ scripts/*
 
 !checks/verify-setup.cjs
 !checks/verify-quiz.cjs
+
+!structure.html
+!structure.js
+!checks/verify-structure.cjs

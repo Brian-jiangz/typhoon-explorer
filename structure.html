@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080e15"><title>台风探秘 · 台风结构</title><link rel="stylesheet" href="learning.css?v=158150f5ac3e"></head>
+<body>
+<header><a class="brand" href="index.html"><span class="brand-mark">◉</span> 台风探秘 <small>EARTH LAB</small></a><nav aria-label="主导航"><a href="index.html">地球模拟</a><a href="structure.html" id="navAnatomy" aria-current="page">台风结构</a><a href="knowledge.html#quiz" id="navQuiz">知识挑战</a></nav><a class="back-earth" href="index.html">回到地球 ↗</a></header>
+<main>
+<div class="page-heading"><div><span class="eyebrow" id="pageKicker">INSIDE THE STORM / 02</span><h1 id="pageTitle">走进一场台风。</h1><p id="pageSubtitle">转一转，剖开看看。风暴中心藏着怎样的世界？</p></div><span class="page-tag" id="pageTag">结构示意 · 北半球</span></div>
+<div class="learning-layout">
+<section class="visual-stage" aria-label="台风交互场景">
+<div id="stormScene" tabindex="0" role="img" aria-label="可旋转的三维台风结构示意，使用右侧部位按钮选择风眼、眼墙、雨带和高空流出"></div>
+<div id="stormFallback" hidden><svg viewBox="0 0 800 650" role="img" aria-label="台风结构俯视示意"><defs><radialGradient id="cloudShade"><stop stop-color="#eef4f3"/><stop offset="1" stop-color="#91aeb8" stop-opacity="0"/></radialGradient></defs><rect width="800" height="650" fill="#0b2538"/><g fill="none" stroke="url(#cloudShade)" stroke-width="55" opacity=".9"><path d="M400 320 C490 210 640 350 510 440 C340 560 150 340 280 170 C410 10 730 160 690 390"/><path d="M400 320 C300 400 190 230 330 170 C510 80 670 320 520 480 C390 630 90 470 110 270"/></g><ellipse cx="400" cy="320" rx="70" ry="62" fill="#dbe8e7"/><ellipse cx="400" cy="320" rx="28" ry="25" fill="#0c293b"/></svg><p>当前浏览器未启动三维视图，仍可通过部位按钮探索。</p></div>
+<div id="sceneLabels" aria-label="图上部位标记"></div>
+<div class="scene-topline"><span id="sceneName">台风 · 立体观察</span><button id="motionToggle" aria-pressed="false">暂停云系</button></div>
+<div class="scene-toolbar" id="sceneToolbar" aria-label="台风视角"><button data-view="orbit" aria-pressed="true">立体看</button><button data-view="cut" aria-pressed="false">剖开看</button><span></span><button id="flowToggle" aria-pressed="false">空气怎么走 ↗</button></div>
+<div class="scene-bottomline"><span id="sceneHint">拖动旋转 · 滚轮缩放 · 点击编号看部位</span><span id="sceneScale">云高经夸张 · 非卫星实况</span></div>
+</section>
+<aside class="lesson-panel" id="anatomyPanel"><div class="eyebrow">从中心向外，认识一场风暴</div><div class="part-tabs" role="tablist" aria-label="台风部位"><button data-part="eye" role="tab" aria-selected="false" aria-controls="partContent"><span>01</span>风眼</button><button data-part="wall" role="tab" aria-selected="true" aria-controls="partContent"><span>02</span>眼墙</button><button data-part="band" role="tab" aria-selected="false" aria-controls="partContent"><span>03</span>雨带</button><button data-part="outflow" role="tab" aria-selected="false" aria-controls="partContent"><span>04</span>高空流出</button></div><article id="partContent" role="tabpanel" tabindex="0"><span class="part-number" id="partNumber">02 / 04</span><h2 id="partTitle">最猛烈的风雨，<br>藏在这一圈。</h2><p id="partText"></p><div class="observation"><span id="partMood"></span><div class="wind-indicator" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div><div class="one-thing"><span>记住这一点</span><p id="partTakeaway"></p></div><button class="text-action" id="partAction">剖开眼墙看看 ↗</button></article><div class="lesson-footer"><span>看懂了？试着用一用。</span><a href="knowledge.html#quiz">开始知识挑战 →</a></div></aside>
+</div>
+<footer><span>三维结构为科普示意 · 不同台风的结构会有差异</span><a href="assets/LEARNING-SOURCES.md">科学依据与说明 ↗</a></footer>
+</main>
+<script src="assets/three.min.js"></script><script src="assets/textures.js"></script><script src="learning-model.js?v=067a26fc507b"></script><script src="storm-view.js?v=faf3b7427f12"></script><script src="structure.js?v=0cb4fe2c42c7"></script>
+</body></html>
