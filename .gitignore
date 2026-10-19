@@ -52,3 +52,5 @@ scripts/*
 !scripts/verify-weather.py
 !checks/verify-weather.cjs
 !checks/verify-weather-ui.cjs
+
+!checks/verify-timescale.cjs
