@@ -46,3 +46,7 @@
 GitHub Pages 从 `main` 分支根目录发布。后续推送到 `main` 后，网站会自动更新。
 
 三维渲染使用 three.js，许可证见 [THREE-LICENSE.txt](assets/THREE-LICENSE.txt)；Natural Earth 地理数据为 public domain，其他素材来源见数据说明。
+
+### 亚洲台风示意图
+
+主导航按“地球模拟 → 台风结构 → 台风示意图 → 知识挑战”排列。`diagram.html` 展示原创中文亚洲台风路径图，支持打开高清 SVG。真实海岸线来自本地 Natural Earth；路径、副高和阶段均为教学示意，没有虚构观测日期或风速。运行 `python3 scripts/build-diagram.py` 可重新生成图稿。

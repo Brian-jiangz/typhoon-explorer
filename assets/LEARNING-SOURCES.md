@@ -58,3 +58,15 @@ WebGL 不可用时显示中文静态剖面备选图，保留部位说明和全�
 2026年10月19日根据科学审阅意见修订第1题、第6题和结构页的眼墙、雨带说明。第1题仅考查具有清晰眼墙的成熟台风的近地面最大风速位置，不把最大风速与最强降水合并为同一结论。第6题区分瞬时降雨强度与累计降雨量，并说明外围雨带、对流单体反复经过、水汽辐合、地形抬升和降雨持续时间的作用。两种降水指标的最大值都不必位于眼墙附近。
 
 参考：Lamers et al. (2023), Forecasting tropical cyclone rainfall and flooding hazards and impacts, Tropical Cyclone Research and Review 12, 100–112，[DOI](https://doi.org/10.1016/j.tcrr.2023.06.005)，[NOAA公开全文](https://repository.library.noaa.gov/view/noaa/63565/noaa_63565_DS1.pdf)。该综述讨论移动速度、地形、水汽、切变及其他天气系统对降水分布的影响，并强调降水不能由最大风速单独判断。本次未将尚未核实的具体站点累计雨量数值加入题库。
+
+## 亚洲台风路径示意图
+
+2026年10月20日新增独立的 `diagram.html`，主导航顺序为地球模拟、台风结构、台风示意图、知识挑战。保留原有三维结构页与25题随机挑战。
+
+`assets/typhoon-diagram.svg` 为原创中文矢量信息图，由 `scripts/build-diagram.py` 从本地 Natural Earth 1:110m 海岸线绘制。参考用户所给桑迪图片的路径叙事方式，将背景改为亚洲与西北太平洋，不复制原图的底图、图形、品牌、文字与数据。
+
+海岸线是真实地理数据；红色轨迹、阶段位置、副高轮廓和引导箭头是虚构的定性教学示意，不对应杜苏芮、桑迪或任何历史个例，不使用日期、风速、雨量、降雪范围或实况气压等未经观测支撑的数值。副高以北半球顺时针环流示意，说明台风沿其南侧向西、西侧向北移动的一种可能情况。未把副高单一位置当作路径唯一决定因素，也未暗示所有台风均登陆。
+
+机制依据为[香港天文台《天气系统配对——热带气旋路径》](https://www.hko.gov.hk/en/education/tropical-cyclone/tracking/00707-Weather-Systems-Mix-and-Match-Tropical-Cyclone-Track.html)：副高、西风槽与季风槽及其相互作用都会影响路径；副高偏东时可能海上转向，向西伸展时可能向南海方向移动。这些为概念模型，不能用于预报。登陆后通常衰减的解释采用 NOAA JetStream 的热带气旋形成与衰减机制；减弱不等于降雨危险结束。
+
+登陆衰减依据：[NOAA AOML 热带气旋常见问题 C2](https://www.aoml.noaa.gov/hrd/tcfaq/C2.html?print=yes)。热量和水汽的海洋供给减少是主要原因，不将地表摩擦单独视为台风衰亡的决定因素。

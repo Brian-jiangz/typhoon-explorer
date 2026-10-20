@@ -54,3 +54,8 @@ scripts/*
 !checks/verify-weather-ui.cjs
 
 !checks/verify-timescale.cjs
+
+!diagram.html
+!diagram.css
+!assets/typhoon-diagram.svg
+!scripts/build-diagram.py
