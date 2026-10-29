@@ -1,6 +1,7 @@
 /* Shared teaching model: idealized quiz, monthly climate sandbox and retrospective weather case. */
 (function(root){
  const keys=[{h:0,lat:10,lon:143,v:12,p:1004},{h:18,lat:12,lon:139,v:21,p:994},{h:36,lat:15,lon:135,v:35,p:974},{h:54,lat:18.5,lon:131,v:46,p:945},{h:72,lat:21,lon:126,v:55,p:925},{h:90,lat:23,lon:120.8,v:40,p:960},{h:102,lat:25,lon:118.5,v:24,p:987},{h:120,lat:28,lon:115,v:10,p:1005}];
+ const LANDFALL_FADE_HOURS=120,FREE_MAX_HOURS=25*24;
  const stages=[{min:0,name:'热带扰动',level:'≤ 5 级',text:'风暴已明显减弱，环流和中心云团逐渐松散。'},{min:10.8,name:'热带低压',level:'6–7 级',text:'暖洋面上的扰动逐步组织，云团还没有清晰的风眼。'},{min:17.2,name:'热带风暴',level:'8–9 级',text:'环流逐渐组织，螺旋雨带开始围绕低压中心发展。'},{min:24.5,name:'强热带风暴',level:'10–11 级',text:'中心云团更密集，外围雨带向中心弯曲卷入。'},{min:32.7,name:'台风',level:'12–13 级',text:'成熟风暴可出现风眼，周围的眼墙集中了强风与强降水。'},{min:41.5,name:'强台风',level:'14–15 级',text:'螺旋云带与中心密集云区包围风眼，风暴进入强盛阶段。'},{min:51,name:'超强台风',level:'16 级及以上',text:'本情景达到最强阶段；随后接近陆地并逐渐减弱。'}];
  function reference(hour){const h=Math.max(0,Math.min(120,Number(hour)||0));let i=0;while(i<keys.length-2&&h>keys[i+1].h)i++;const a=keys[i],b=keys[i+1],t=(h-a.h)/(b.h-a.h);const s={h};for(const k of ['lat','lon','v','p'])s[k]=a[k]+(b[k]-a[k])*t;s.stage=stages.filter(x=>s.v>=x.min).at(-1);s.strength=Math.max(0,Math.min(1,(s.v-10)/45));return s}
  const defaults={sst:29,depth:70,humidity:75,shear:6,latitude:17,seed:65,cape:1500,outflow:75,land:0};
@@ -69,12 +70,13 @@
  function formationState(point,run){
   const evaluation=formationEnvironment(point.lat,run.environment,{lon:point.lon,month:run.month,adjustments:run.adjustments,weather:run.weather,h:point.h}),v=Math.max(0,point.v),stage=stages.filter(s=>v>=s.min).at(-1),text=point.onLand?'经过陆地，海洋供能减少，热带云系逐步衰减。':!evaluation.valid?'当地热力资料暂缺，按已有风场继续移动；海上强度暂不更新。':!evaluation.piValid?'热力计算不可用，不推算增强；这里只继续示意衰减。':point.trend<-.001?'当地热力条件、风差或干空气限制发展，系统正在逐渐减弱。':'云团根据当地热力条件、湿度和上下层风差逐步发展。';
   const ratio=evaluation.pi>0?clamp(v/evaluation.pi,0,1.3):0,p=evaluation.piValid&&evaluation.pmin!==null?evaluation.slp-(evaluation.slp-evaluation.pmin)*ratio*ratio:NaN;
-  return{...point,v,p,strength:clamp((v-10)/45),organization:clamp(point.organization),shear:clamp(evaluation.env.shear/30),spin:clamp(Math.sin(Math.abs(point.lat)*DEG)/Math.sin(10*DEG)),stage:{...stage,...(v>=32.7&&run.basin.storm!=='台风'?{name:run.basin.storm}:{}),text},environment:evaluation};
+  const cloudFade=run.landfall&&!run.weather?clamp(1-Math.max(0,point.h-run.landfall.h)/LANDFALL_FADE_HOURS):1;
+  return{...point,v,p,strength:clamp((v-10)/45),organization:clamp(point.organization),cloudFade,shear:clamp(evaluation.env.shear/30),spin:clamp(Math.sin(Math.abs(point.lat)*DEG)/Math.sin(10*DEG)),stage:{...stage,...(v>=32.7&&run.basin.storm!=='台风'?{name:run.basin.storm}:{}),text},environment:evaluation};
  }
  function createFormation(options={}){
   const validated=validateGenesis(options.start||{lat:17,lon:138});if(!validated.valid)throw new RangeError(validated.message);
   const month=clamp(Math.round(Number(options.month)||8),1,12),base=options.weather?root.TyphoonWeather?.at(validated.point.lat,validated.point.lon,0):root.TyphoonClimate?.at(validated.point.lat,validated.point.lon,month),initial={...defaults,...(base?.valid?{sst:base.sst,humidity:base.humidity,shear:base.shear}:{}),...options.environment,latitude:validated.point.lat},environment=normalize(initial),basin=basinAt(validated.point.lon,validated.point.lat),ridge=normalizeRidge(options.ridge||basin.ridge),value=Number(options.initialWind??8),v=clamp(Number.isFinite(value)?value:8,3,75);
-  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,weather:!!options.weather,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:options.weather?root.TYPHOON_WEATHER.hours.at(-1):360,history:[],landfall:null};
+  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,weather:!!options.weather,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:options.weather?root.TYPHOON_WEATHER.hours.at(-1):360,history:[],landfall:null,finishedReason:null};
   run.history.push(formationState({...validated.point,h:0,v,landHours:0,onLand:false,trend:0,organization:environment.seed>0?(.35+.35*clamp(environment.seed/100))*clamp(Math.sin(Math.abs(validated.point.lat)*DEG)/Math.sin(8*DEG)):0},run));return run;
  }
  function formationFlow(lat,lon,run,h=run.history?.at(-1)?.h??0){
@@ -93,19 +95,21 @@
   return{valid:true,u:actual.u+(mapped.u-actual.u)*weight,v:actual.v+(mapped.v-actual.v)*weight};
  }
  function formationVelocity(lat,lon,run,h=run.history?.at(-1)?.h??0){const flow=formationFlow(lat,lon,run,h);if(!flow.valid)return{lat:0,lon:0,valid:false,reason:flow.reason};return{valid:true,lon:flow.u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:flow.v*3600/EARTH_RADIUS/DEG};}
+ function formationEndHour(run){return Math.min(run.maxHours,run.landfall&&!run.weather?run.landfall.h+LANDFALL_FADE_HOURS:run.maxHours);}
  function advanceFormation(run,targetHour){
-  const target=clamp(Number(targetHour)||0,0,run.maxHours),dt=run.step;
+  const target=clamp(Number(targetHour)||0,0,formationEndHour(run)),dt=run.step;
   while(run.history.at(-1).h+dt<=target+1e-9){
-   const s=run.history.at(-1),a=formationVelocity(s.lat,s.lon,run,s.h),midLat=clamp(s.lat+a.lat*dt/2,-80,80),midLon=s.lon+a.lon*dt/2,b=formationVelocity(midLat,midLon,run,s.h+dt/2),lat=clamp(s.lat+b.lat*dt,-80,80),lon=((s.lon+b.lon*dt+180)%360+360)%360-180,onLand=isLand(midLat,midLon),env=formationEnvironment(midLat,run.environment,{lon:midLon,month:run.month,adjustments:run.adjustments,weather:run.weather,h:s.h+dt/2});
+   const s=run.history.at(-1);if(run.landfall&&!run.weather&&s.h+dt>run.landfall.h+LANDFALL_FADE_HOURS+1e-9){run.finishedReason='登陆后5天，云系已消散，模拟结束。';break;}const a=formationVelocity(s.lat,s.lon,run,s.h),midLat=clamp(s.lat+a.lat*dt/2,-80,80),midLon=s.lon+a.lon*dt/2,b=formationVelocity(midLat,midLon,run,s.h+dt/2),lat=clamp(s.lat+b.lat*dt,-80,80),lon=((s.lon+b.lon*dt+180)%360+360)%360-180,onLand=isLand(midLat,midLon),env=formationEnvironment(midLat,run.environment,{lon:midLon,month:run.month,adjustments:run.adjustments,weather:run.weather,h:s.h+dt/2});
    if(!a.valid||!b.valid){run.stoppedReason=a.reason||b.reason||'引导风资料不足，无法继续移动。';break;}
    const organizationGoal=onLand||!run.seedCanDevelop?0:env.organizationTarget,organization=!env.valid&&!onLand?s.organization:organizationGoal+(s.organization-organizationGoal)*Math.exp(-dt/(onLand?8:18)),equilibrium=onLand?3:Math.max(3,env.intensityTarget*organization),tau=onLand?12:equilibrium<s.v?18:36,v=!env.valid&&!onLand?s.v:equilibrium+(s.v-equilibrium)*Math.exp(-dt/tau),h=Number((s.h+dt).toFixed(8));
-   if(onLand&&!run.landfall)run.landfall={h:s.h+dt/2,lat:midLat,lon:midLon,region:regionName(midLat,midLon)};
+   if(onLand&&!run.landfall)run.landfall={h,lat:midLat,lon:midLon,region:regionName(midLat,midLon)};
    run.history.push(formationState({h,lat,lon,v,landHours:s.landHours+(onLand?dt:0),onLand,trend:(v-s.v)/dt,organization},run));
+   if(run.landfall&&!run.weather&&h>=run.landfall.h+LANDFALL_FADE_HOURS-1e-9){run.finishedReason='登陆后5天，云系已消散，模拟结束。';break;}
   }return readFormation(run,target);
  }
  function readFormation(run,hour){
   const h=clamp(Number(hour)||0,0,run.history.at(-1).h),i=Math.min(run.history.length-1,Math.floor(h/run.step)),a=run.history[i],b=run.history[Math.min(i+1,run.history.length-1)];if(a===b)return a;
   const t=clamp((h-a.h)/(b.h-a.h)),point={h,onLand:t<.5?a.onLand:b.onLand};for(const key of ['lat','lon','v','landHours','trend','organization'])point[key]=a[key]+(b[key]-a[key])*t;return formationState(point,run);
  }
- root.TyphoonModel={keys,defaults,controls,normalize,evaluate,reference,sample,ridgeDefault,ridgePresets,normalizeRidge,basinAt,ridgeGeometry,heightField,ridgeWind,steering,angularVelocity,trajectory,positionAt,classifyTrack,isLand,regionName,formationEnvironment,validateGenesis,formationFlow,formationVelocity,createFormation,advanceFormation,readFormation};
+ root.TyphoonModel={keys,defaults,controls,normalize,evaluate,reference,sample,ridgeDefault,ridgePresets,normalizeRidge,basinAt,ridgeGeometry,heightField,ridgeWind,steering,angularVelocity,trajectory,positionAt,classifyTrack,isLand,regionName,formationEnvironment,validateGenesis,formationFlow,formationVelocity,createFormation,formationEndHour,advanceFormation,readFormation,FREE_MAX_HOURS};
 })(typeof window==='undefined'?globalThis:window);
