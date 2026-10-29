@@ -38,6 +38,7 @@
   if(lon<100)return{id:'indian',name:'北印度洋',storm:'热带气旋',ridge:{west:55,axis:28,offset:-70}};
   return{id:'westPacific',name:'西北太平洋',storm:'台风',ridge:{...ridgeDefault}};
  }
+ function splitRidgeState(hour=0){const h=Math.max(0,Number(hour)||0),lon=114+4*Math.sin(h/67-.2),lat=32.5+1.5*Math.sin(h/49+.4),strength=.22*Math.exp(-h/180)*(.62+.38*Math.cos(h/29)**2),halfLon=18;return{lon,lat,strength,opacity:clamp(strength/.22),ridge:{west:lon-halfLon,axis:lat,offset:lon+halfLon-170}};}
  function normalizeRidge(input={}){const offset=Number.isFinite(Number(input.offset))?clamp(Number(input.offset),-360,360):0,west=Number(input.west??(ridgeDefault.west+offset)),axis=Number(input.axis??ridgeDefault.axis);return{west:clamp(Number.isFinite(west)?west:ridgeDefault.west+offset,110+offset,140+offset),axis:clamp(Number.isFinite(axis)?axis:ridgeDefault.axis,23,38),...(offset?{offset}:{})};}
  function ridgeGeometry(input={}){const r=normalizeRidge(input),east=170+(r.offset||0);return{...r,east,center:(east+r.west)/2,halfLon:(east-r.west)/2,halfLat:10};}
  function longitudeDifference(a,b){return((a-b+180)%360+360)%360-180;}
@@ -76,23 +77,22 @@
  function createFormation(options={}){
   const validated=validateGenesis(options.start||{lat:17,lon:138});if(!validated.valid)throw new RangeError(validated.message);
   const month=clamp(Math.round(Number(options.month)||8),1,12),base=options.weather?root.TyphoonWeather?.at(validated.point.lat,validated.point.lon,0):root.TyphoonClimate?.at(validated.point.lat,validated.point.lon,month),initial={...defaults,...(base?.valid?{sst:base.sst,humidity:base.humidity,shear:base.shear}:{}),...options.environment,latitude:validated.point.lat},environment=normalize(initial),basin=basinAt(validated.point.lon,validated.point.lat),ridge=normalizeRidge(options.ridge||basin.ridge),value=Number(options.initialWind??8),v=clamp(Number.isFinite(value)?value:8,3,75);
-  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,weather:!!options.weather,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:options.weather?root.TYPHOON_WEATHER.hours.at(-1):360,history:[],landfall:null,finishedReason:null};
+  const adjustments={sst:base?.valid?environment.sst-base.sst:0,humidity:base?.valid?environment.humidity-base.humidity:0,shear:base?.valid?environment.shear-base.shear:0},run={start:{...validated.point},environment,adjustments,month,ridge,basin,weather:!!options.weather,splitRidge:!!options.splitRidge,initialWind:v,seedCanDevelop:environment.seed>0,step:.25,maxHours:options.weather?root.TYPHOON_WEATHER.hours.at(-1):360,history:[],landfall:null,finishedReason:null};
   run.history.push(formationState({...validated.point,h:0,v,landHours:0,onLand:false,trend:0,organization:environment.seed>0?(.35+.35*clamp(environment.seed/100))*clamp(Math.sin(Math.abs(validated.point.lat)*DEG)/Math.sin(8*DEG)):0},run));return run;
  }
  function formationFlow(lat,lon,run,h=run.history?.at(-1)?.h??0){
   const sample=(lat,lon)=>run.weather?root.TyphoonWeather?.flowAt(lat,lon,h,run.windMethod||'point'):root.TyphoonClimate?.flowAt(lat,lon,run.month),base=sample(lat,lon);
   if(!base?.valid)return{valid:false,reason:base?.reason||'引导风背景缺测。'};
   if(run.weather)return{valid:true,u:base.u,v:base.v};
-  const blend=flow=>({u:flow.u,v:flow.v}),actual=blend(base),control=ridgeGeometry(run.basin.ridge),modified=ridgeGeometry(run.ridge);
-  if(modified.west===control.west&&modified.axis===control.axis)return{valid:true,...actual};
-  // Resample the observed monthly wind pattern under a hypothetical ridge deformation.
-  // The displayed ellipse still is not a diagnosed geopotential-height contour.
-  const x=longitudeDifference(lon,modified.center)/modified.halfLon,y=(lat-modified.axis)/modified.halfLat,r=Math.hypot(x,y),t=clamp((2-r)),weight=t*t*(3-2*t);
-  if(weight===0)return{valid:true,...actual};
-  const sourceLat=lat-(modified.axis-control.axis),sourceLon=control.east+longitudeDifference(lon,modified.east)*control.halfLon/modified.halfLon,source=sample(sourceLat,sourceLon);
-  if(!source.valid)return{valid:false,reason:'调整后的引导风采样位置超出资料范围。'};
-  const mapped=blend(source);
-  return{valid:true,u:actual.u+(mapped.u-actual.u)*weight,v:actual.v+(mapped.v-actual.v)*weight};
+  const actual={u:base.u,v:base.v},control=ridgeGeometry(run.basin.ridge),modified=ridgeGeometry(run.ridge);let u=actual.u,v=actual.v;
+  if(modified.west!==control.west||modified.axis!==control.axis){
+   // Resample the monthly wind pattern under the primary-ridge deformation.
+   // The displayed ellipse is not a diagnosed geopotential-height contour.
+   const x=longitudeDifference(lon,modified.center)/modified.halfLon,y=(lat-modified.axis)/modified.halfLat,r=Math.hypot(x,y),t=clamp((2-r)),weight=t*t*(3-2*t);
+   if(weight>0){const sourceLat=lat-(modified.axis-control.axis),sourceLon=control.east+longitudeDifference(lon,modified.east)*control.halfLon/modified.halfLon,source=sample(sourceLat,sourceLon);if(!source.valid)return{valid:false,reason:'调整后的引导风采样位置超出资料范围。'};u=actual.u+(source.u-actual.u)*weight;v=actual.v+(source.v-actual.v)*weight;}
+  }
+  if(run.splitRidge&&run.basin.id==='westPacific'){const cell=splitRidgeState(h),wind=ridgeWind(lat,lon,cell.ridge);u+=wind.u*cell.strength;v+=wind.v*cell.strength;}
+  return{valid:true,u,v};
  }
  function formationVelocity(lat,lon,run,h=run.history?.at(-1)?.h??0){const flow=formationFlow(lat,lon,run,h);if(!flow.valid)return{lat:0,lon:0,valid:false,reason:flow.reason};return{valid:true,lon:flow.u*3600/(EARTH_RADIUS*Math.max(.08,Math.cos(lat*DEG)))/DEG,lat:flow.v*3600/EARTH_RADIUS/DEG};}
  function formationEndHour(run){return Math.min(run.maxHours,run.landfall&&!run.weather?run.landfall.h+LANDFALL_FADE_HOURS:run.maxHours);}
@@ -111,5 +111,5 @@
   const h=clamp(Number(hour)||0,0,run.history.at(-1).h),i=Math.min(run.history.length-1,Math.floor(h/run.step)),a=run.history[i],b=run.history[Math.min(i+1,run.history.length-1)];if(a===b)return a;
   const t=clamp((h-a.h)/(b.h-a.h)),point={h,onLand:t<.5?a.onLand:b.onLand};for(const key of ['lat','lon','v','landHours','trend','organization'])point[key]=a[key]+(b[key]-a[key])*t;return formationState(point,run);
  }
- root.TyphoonModel={keys,defaults,controls,normalize,evaluate,reference,sample,ridgeDefault,ridgePresets,normalizeRidge,basinAt,ridgeGeometry,heightField,ridgeWind,steering,angularVelocity,trajectory,positionAt,classifyTrack,isLand,regionName,formationEnvironment,validateGenesis,formationFlow,formationVelocity,createFormation,formationEndHour,advanceFormation,readFormation,FREE_MAX_HOURS};
+ root.TyphoonModel={keys,defaults,controls,normalize,evaluate,reference,sample,ridgeDefault,ridgePresets,normalizeRidge,basinAt,splitRidgeState,ridgeGeometry,heightField,ridgeWind,steering,angularVelocity,trajectory,positionAt,classifyTrack,isLand,regionName,formationEnvironment,validateGenesis,formationFlow,formationVelocity,createFormation,formationEndHour,advanceFormation,readFormation,FREE_MAX_HOURS};
 })(typeof window==='undefined'?globalThis:window);
